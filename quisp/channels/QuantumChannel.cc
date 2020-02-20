@@ -4,6 +4,7 @@
  *  \authors takaakimatsuo
  *
  *  \brief QuantumChannel
+ *  Quantum Channel is state of connections
  */
 #include <vector>
 #include <omnetpp.h>
@@ -19,12 +20,13 @@ using namespace quisp::messages;
 namespace quisp {
 namespace channels {
 
-/*The sum of Z,X and Y error rate equates to pauli_error_rate. Value could potentially between 0 ~ 1. */
+/*The sum of Z,X and Y error rate equates to pauli_error_rate. 
+Value could potentially between 0 ~ 1. */
 typedef struct _channel_error_model{
     double pauli_error_rate;//Overall error rate
-    double Z_error_rate;
-    double X_error_rate;
-    double Y_error_rate;
+    double Z_error_rate; // pauliZ error rate
+    double X_error_rate; // pauliX error rate
+    double Y_error_rate; // pauliY error rate
 } channel_error_model;
 
 
@@ -33,24 +35,26 @@ typedef struct _channel_error_model{
  *  \todo Documentation of the class header.
  *
  *  \brief QuantumChannel
+ *  inhereted from omnetpp::cDataChannel?
  */
-class QuantumChannel : public cDatarateChannel
-{
+class QuantumChannel : public cDatarateChannel{
     public:
-        channel_error_model err;
-        double photon_loss_rate;
+        channel_error_model err; //define err as channel error model 
+        double photon_loss_rate; // ratio of losing photon in fiber
         double distance = 0; //in km
         //int less = 0, more = 0;
     private:
-       double No_error_ceil;
-       double X_error_ceil;
-       double Y_error_ceil;
-       double Z_error_ceil;
-       double Lost_ceil;
-       int DEBUG_darkcount_count = 0;
-       MatrixXd Q_to_the_distance;
-       virtual void initialize();
-       virtual void processMessage(cMessage *msg, simtime_t t, result_t& result);
+       double No_error_ceil; // no error ratio?
+       double X_error_ceil; // X error rate ?
+       double Y_error_ceil; // Y error rate ?
+       double Z_error_ceil; // Z error rate ?
+       double Lost_ceil; // photon loss error?
+       int DEBUG_darkcount_count = 0; // the number of darkcount
+       MatrixXd Q_to_the_distance; // initialize matrix for marcov error?
+       virtual void initialize(); // for derivation classes?
+       virtual void processMessage(cMessage *msg, simtime_t t, result_t& result); 
+       // message about processes? 
+       // cMessage: Classical message? simtime_t:simulation time? result_t: result?
     public:
        QuantumChannel();
 
@@ -58,15 +62,17 @@ class QuantumChannel : public cDatarateChannel
 
 Define_Channel(QuantumChannel)
 
-QuantumChannel::QuantumChannel()
-{
+QuantumChannel::QuantumChannel(){
 
 }
-
+/** Initialize Quantum Channel
+ *  
+ *  Wrapping cDataChannel initialize
+*/
 void QuantumChannel::initialize(){
     cDatarateChannel::initialize();
-    Q_to_the_distance(5,5);
-    distance = par("distance");//in km
+    Q_to_the_distance(5,5); // initilize error matrix
+    distance = par("distance");//in km (getting distance parameter from others?)
 
 
     /*double Z_error_ratio = par("Z_error_ratio");//par("name") will be read from .ini or .ned file
@@ -90,11 +96,11 @@ void QuantumChannel::initialize(){
     photon_loss_rate = err.pauli_error_rate * (Loss_error_ratio/ratio_sum);//Photon Loss rate per km.
     */
 
-    photon_loss_rate = par("channel_Loss_error_rate");
-    err.X_error_rate = par("channel_X_error_rate");
-    err.Y_error_rate = par("channel_Y_error_rate");
-    err.Z_error_rate = par("channel_Z_error_rate");
-    err.pauli_error_rate =  err.X_error_rate +  err.Y_error_rate +  err.Z_error_rate + photon_loss_rate;
+    photon_loss_rate = par("channel_Loss_error_rate"); //photon loss rate
+    err.X_error_rate = par("channel_X_error_rate"); // pauliX error rate
+    err.Y_error_rate = par("channel_Y_error_rate"); // pauliY error rate
+    err.Z_error_rate = par("channel_Z_error_rate"); // pauliZ error rate
+    err.pauli_error_rate =  err.X_error_rate +  err.Y_error_rate +  err.Z_error_rate + photon_loss_rate; // total error rate
 
     /*
     int num_err_type = 0;
@@ -115,13 +121,18 @@ void QuantumChannel::initialize(){
 
     //std::cout<<"Sum of errors must be ... = "<<err.X_error_rate+err.Y_error_rate+err.Z_error_rate+photon_loss_rate<<"\n";
     //std::cout<<"Channel err:"<<err.pauli_error_rate<<" X = " <<err.X_error_rate << "Y = "<< err.Y_error_rate << ", Z = "<< err.Z_error_rate<<",Loss"<<photon_loss_rate<<"\n";
-    MatrixXd Transition_matrix(5,5);
+    MatrixXd Transition_matrix(5,5); // define another matrix for state transition
 
-    Transition_matrix << 1-err.pauli_error_rate, err.X_error_rate,err.Z_error_rate,err.Y_error_rate,photon_loss_rate,
-                err.X_error_rate, 1-err.pauli_error_rate, err.Y_error_rate,err.Z_error_rate,photon_loss_rate,
-                err.Z_error_rate,err.Y_error_rate, 1-err.pauli_error_rate,err.X_error_rate, photon_loss_rate,
-                err.Y_error_rate,err.Z_error_rate, err.X_error_rate, 1-err.pauli_error_rate, photon_loss_rate,
-                0,0,0,0,1;
+    /** error model matrix for transition
+     *  Diagonal elements: no error
+     *  others: some errors
+     *  In this case, we have five error models, so we have 5 by 5 matrix
+     *  **/
+    Transition_matrix << 1-err.pauli_error_rate, err.X_error_rate, err.Z_error_rate, err.Y_error_rate, photon_loss_rate,
+                         err.X_error_rate, 1-err.pauli_error_rate, err.Y_error_rate, err.Z_error_rate, photon_loss_rate,
+                         err.Z_error_rate, err.Y_error_rate, 1-err.pauli_error_rate, err.X_error_rate, photon_loss_rate,
+                         err.Y_error_rate, err.Z_error_rate, err.X_error_rate, 1-err.pauli_error_rate, photon_loss_rate,
+                         0,0,0,0,1;
 
     std::cout<<"Transition mat per km = \n"<<Transition_matrix<<"\n";
     MatrixPower<MatrixXd> Apow(Transition_matrix);
@@ -136,41 +147,42 @@ void QuantumChannel::initialize(){
 
 
 
-void QuantumChannel::processMessage(cMessage *msg, simtime_t t, result_t& result)
-{
+void QuantumChannel::processMessage(cMessage *msg, simtime_t t, result_t& result){
 
     cDatarateChannel::processMessage(msg, t, result);//Call the original processMessage
 
     try{
+        // check_and_cast is inside method of omnetpp.h
+        // This function is wrapping dynamic_cast in c++
         PhotonicQubit *q = check_and_cast<PhotonicQubit *>(msg);
 
-        bool lost = q->getPhotonLost();
-        bool Zerr = q->getPauliZerr();
-        bool Xerr = q->getPauliXerr();
+        bool lost = q->getPhotonLost();　// isPhotonLost
+        bool Zerr = q->getPauliZerr(); // isPauliZ error
+        bool Xerr = q->getPauliXerr(); // isPauliX error
 
         //The photon may have an error when emitted.
         MatrixXd Initial_condition(1,5);//I, X, Z, Y, Photon Lost
         if(lost){
-                    Initial_condition << 0,0,0,0,1;//Photon already lost. Maybe by emission time. Not implemented though.
+            Initial_condition << 0,0,0,0,1;//Photon already lost. Maybe by emission time. Not implemented though.
         }else if(Zerr && Xerr){
-                    Initial_condition << 0,0,0,1,0;//Has a Y error
+            Initial_condition << 0,0,0,1,0;//Has a Y error
         }else if(Zerr && !Xerr){
-                    Initial_condition << 0,0,1,0,0;//Has a Z error
+            Initial_condition << 0,0,1,0,0;//Has a Z error
         }else if(!Zerr && Xerr){
-                    Initial_condition << 0,1,0,0,0;//Has an X error
+            Initial_condition << 0,1,0,0,0;//Has an X error
         }else{
-                    Initial_condition << 1,0,0,0,0;//No error
+            Initial_condition << 1,0,0,0,0;//No error
         }
         MatrixXd Output_condition(1,5);
-        Output_condition = Initial_condition * Q_to_the_distance;
+        Output_condition = Initial_condition * Q_to_the_distance; // condition change according to error matrix
 
         //std::cout<<"Q_to_the_distance"<<Q_to_the_distance<<"\n";
         //std::cout<<"Output_condition = "<<Output_condition<<"\n";
-        No_error_ceil = Output_condition(0,0);
-        X_error_ceil = No_error_ceil+Output_condition(0,1);
-        Z_error_ceil = X_error_ceil+Output_condition(0,2);
-        Y_error_ceil = Z_error_ceil+Output_condition(0,3);
-        Lost_ceil = Y_error_ceil + Output_condition(0,4);
+        No_error_ceil = Output_condition(0,0); // no error
+        X_error_ceil = No_error_ceil + Output_condition(0,1); // xerror only?
+        Z_error_ceil = X_error_ceil + Output_condition(0,2); // zerror only?
+        Y_error_ceil = Z_error_ceil + Output_condition(0,3); // y error only?
+        Lost_ceil = Y_error_ceil + Output_condition(0,4); // lost ?
 
         //std::cout<<"NO error ceil = "<<No_error_ceil<<", X = "<<X_error_ceil<<"Z, "<<Z_error_ceil<<", Y = "<<Y_error_ceil<<", Lost = "<<Lost_ceil<<"\n";
 

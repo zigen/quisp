@@ -24,24 +24,24 @@ namespace modules {
  *
  *  \brief ConnectionManager
  */
-class ConnectionManager : public cSimpleModule
-{
+class ConnectionManager : public cSimpleModule{
     private:
-        int myAddress;
-        RoutingDaemon *routingdaemon;
-        HardwareMonitor *hardwaremonitor;
+        int myAddress; // source address
+        RoutingDaemon *routingdaemon; // from routing daemon
+        HardwareMonitor *hardwaremonitor; // from hardware monitor
     protected:
-        virtual void initialize() override;
-        virtual void handleMessage(cMessage *msg) override;
-        virtual RuleSet* generateRuleSet_EntanglementSwapping(unsigned int RuleSet_id,int owner, int left_node, int right_node);
-
+        virtual void initialize() override; 
+        virtual void handleMessage(cMessage *msg) override; 
+        // generating RuleSet for entanglement swapping
+        virtual RuleSet* generateRuleSet_EntanglementSwapping(unsigned int RuleSet_id, int owner, int left_node, int right_node);
+        // create unique id with hash or something?
         virtual unsigned long createUniqueId();
 };
 
 Define_Module(ConnectionManager);
 
-void ConnectionManager::initialize()
-{
+// initialize
+void ConnectionManager::initialize(){
   EV<<"ConnectionManager booted\n";
   cModule *rd = getParentModule()->getSubmodule("rd");
   routingdaemon = check_and_cast<RoutingDaemon *>(rd);

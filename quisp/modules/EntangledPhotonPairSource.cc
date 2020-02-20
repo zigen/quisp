@@ -13,8 +13,7 @@ namespace modules {
 
 Define_Module(EntangledPhotonPairSource);
 
-void EntangledPhotonPairSource::initialize()
-{
+void EntangledPhotonPairSource::initialize(){ // error rates of photon source
     error_rate = par("error_rate");
     Y_error_ratio = par("Y_error_ratio");
     X_error_ratio = par("X_error_ratio");

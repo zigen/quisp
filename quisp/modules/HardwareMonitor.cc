@@ -23,27 +23,27 @@ using namespace rules;
 Define_Module(HardwareMonitor);
 
 //Hm is also responsible for calculating the rssi/oka's protocol/fidelity calcu and give it to the rd
-void HardwareMonitor::initialize(int stage)
-{
+void HardwareMonitor::initialize(int stage){
   EV<<"HardwareMonitor booted\n";
 
-  output_count initial;
+  output_count initial; // tomography result count
   initial.minus_minus=0;
   initial.minus_plus=0;
   initial.plus_minus=0;
   initial.plus_plus=0;
   initial.total_count=0;
 
+    // pauli operators
   Pauli.X << 0,1,1,0;
   Pauli.Y << 0,Complex(0,-1),Complex(0,1),0;
   Pauli.Z << 1,0,0,-1;
   Pauli.I << 1,0,0,1;
 
 
-  numQnic_rp = par("number_of_qnics_rp");// number of qnics connected to epps.
+  numQnic_rp = par("number_of_qnics_rp");// number of qnics connected to epps. what is epps?
   numQnic_r = par("number_of_qnics_r");// number of qnics connected to internal hom.
   numQnic = par("number_of_qnics");// number of qnics connected to stand alone HoM or internal hom in the neighbor.
-  numQnic_total = numQnic + numQnic_r + numQnic_rp;
+  numQnic_total = numQnic + numQnic_r + numQnic_rp; 
 
   /*This is used to keep your own tomography data, and also to match and store the received partner's tomography data*/
    all_temporal_tomography_output_holder = new Temporal_Tomography_Output_Holder[numQnic_total];//Assumes link tomography only between neighbors.
@@ -51,7 +51,8 @@ void HardwareMonitor::initialize(int stage)
   /*Once all_temporal_tomography_output_holder is filled in, those data are summarized into basis based measurement outcome table. This accumulates the number of ++, +-, -+ and -- for each basis combination.*/
   tomography_data = new raw_data[numQnic_total];//Raw count table for tomography per link/qnic
 
-  for(int i=0; i<numQnic_total; i++){
+  for(int i=0; i < numQnic_total; i++){
+    //   inserting all tomography results with different measurement base. initializing tomography settings
       tomography_data[i].insert(std::make_pair("XX",initial));
       tomography_data[i].insert(std::make_pair("XY",initial));
       tomography_data[i].insert(std::make_pair("XZ",initial));
@@ -67,18 +68,19 @@ void HardwareMonitor::initialize(int stage)
   }
   //std::cout<<"numQnic_total"<<numQnic_total<<"\n";
 
-
    /*This keeps which node is connected to which local qnic.*/
-  tomography_output_filename = par("tomography_output_filename").str();
-  file_dir_name= par("file_dir_name").str();
-  ntable = prepareNeighborTable(ntable, numQnic_total);
-  do_link_level_tomography = par("link_tomography");
-  num_purification_tomography = par("initial_purification");
-  X_Purification = par("X_purification");
-  Z_Purification = par("Z_purification");
-  Purification_type = par("Purification_type");
-  num_measure = par("num_measure");
-  myAddress = par("address");
+  tomography_output_filename = par("tomography_output_filename").str(); // file name for tomography output
+  file_dir_name= par("file_dir_name").str(); // which directory
+  ntable = prepareNeighborTable(ntable, numQnic_total); // a table of neighbor nodes
+  do_link_level_tomography = par("link_tomography"); // do tomography or not
+  num_purification_tomography = par("initial_purification"); // the number of purification time
+  X_Purification = par("X_purification"); // do x purification or not
+  Z_Purification = par("Z_purification"); // do z purification or not
+  Purification_type = par("Purification_type"); // the method of purification
+  num_measure = par("num_measure"); // the number of measurement for tomography
+  myAddress = par("address"); // address of me
+
+    //  define the message for what?
   std::stringstream ss;
   for(auto it = ntable.cbegin(); it != ntable.cend(); ++it){
       ss << it->first << "(d)->(i)" << it->second.qnic.index <<", ";
@@ -86,67 +88,75 @@ void HardwareMonitor::initialize(int stage)
   std::string s = ss.str();
   par("ntable") = s;
 
-  if(do_link_level_tomography && stage == 1){
+  if(do_link_level_tomography && stage == 1){ // if we have link level tomography and what is stage?
 
-      for(auto it = ntable.cbegin(); it != ntable.cend(); ++it){
+      for(auto it = ntable.cbegin(); it != ntable.cend(); ++it){ //?? keep inclementing until when?
           if(myAddress > it->second.neighborQNode_address){//You dont want 2 separate tomography processes to run for each link. Not a very good solution, but makes sure that only 1 request per link is generated.
               EV<<"Generating tomography rules... for node "<<it->second.neighborQNode_address<<"\n";
-              LinkTomographyRequest *pk = new LinkTomographyRequest;
-              pk->setDestAddr(it->second.neighborQNode_address);
-              pk->setSrcAddr(myAddress);
-              pk->setKind(6);
-              send(pk,"RouterPort$o");
+              LinkTomographyRequest *pk = new LinkTomographyRequest; // tomography request (like do tomography?)
+              pk->setDestAddr(it->second.neighborQNode_address); // set destination address of this packet
+              pk->setSrcAddr(myAddress); // set source address
+              pk->setKind(6); // assign paket number 6 MAGENTA
+              send(pk,"RouterPort$o"); // send packet
           }
       }
   }
 }
 
+/**
+ * createUniqueId()
+ * 
+ * brief: returning ruleset id with hash function.
+*/
 unsigned long HardwareMonitor::createUniqueId(){
-    std::string time = SimTime().str();
-    std::string address = std::to_string(myAddress);
-    std::string random = std::to_string(intuniform(0,10000000));
-    std::string hash_seed = address+time+random;
-    std::hash<std::string> hash_fn;
+    std::string time = SimTime().str(); // simulation time 
+    std::string address = std::to_string(myAddress); // address
+    std::string random = std::to_string(intuniform(0,10000000)); // random int for hash
+    std::string hash_seed = address+time+random; // hash seed val
+    std::hash<std::string> hash_fn; // create hash val
     size_t  t = hash_fn(hash_seed);
-    unsigned long RuleSet_id = static_cast<long>(t);
+    unsigned long RuleSet_id = static_cast<long>(t); // change ulong to long for ?
     std::cout<<"Hash is "<<hash_seed<<", t = "<<t<<", long = "<<RuleSet_id<<"\n";
     return RuleSet_id;
 }
 
+
 void HardwareMonitor::handleMessage(cMessage *msg){
-    if(dynamic_cast<LinkTomographyRequest *>(msg) != nullptr){
+    if(dynamic_cast<LinkTomographyRequest *>(msg) != nullptr){  
         /*Received a tomography request from neighbor*/
         LinkTomographyRequest *request = check_and_cast<LinkTomographyRequest *>(msg);
         /*Prepare an acknowledgement*/
         LinkTomographyAck *pk = new LinkTomographyAck;
         pk->setSrcAddr(myAddress);
         pk->setDestAddr(request->getSrcAddr());
-        pk->setKind(6);
-        QNIC_type qnic_type;
-        int qnic_index = -1;
+        pk->setKind(6); // set as 6 ack
+        QNIC_type qnic_type; // define qnic type
+        int qnic_index = -1; // this must be change
         for(auto it = ntable.cbegin(); it != ntable.cend(); ++it){
             if(it->second.neighborQNode_address == request->getSrcAddr()){
                 qnic_type = it->second.qnic.type;
                 qnic_index = it->second.qnic.index;
                 break;
             }
-        }if(qnic_index == -1){
+        }
+        if(qnic_index == -1){
             error("1. Something is wrong when finding out local qnic address from neighbor address in ntable.");
         }
+        // set index and type for ack packet
         pk->setQnic_index(qnic_index);
         pk->setQnic_type(qnic_type);
+        send(pk,"RouterPort$o"); // send it
 
-        send(pk,"RouterPort$o");
-
-    }else if(dynamic_cast<LinkTomographyAck *>(msg) != nullptr){
+    }else if(dynamic_cast<LinkTomographyAck *>(msg) != nullptr){ // 
         /*Received an acknowledgement for tomography from neighbor.*/
         LinkTomographyAck *ack = check_and_cast<LinkTomographyAck *>(msg);
-        /*Create and send RuleSets*/
-        int partner_address = ack->getSrcAddr();
-        QNIC_type partner_qnic_type = ack->getQnic_type();
-        int partner_qnic_index = ack->getQnic_index();
 
-        QNIC_type my_qnic_type;
+        /*Create and send RuleSets*/
+        int partner_address = ack->getSrcAddr(); // add ack to source address
+        QNIC_type partner_qnic_type = ack->getQnic_type(); // qnic type
+        int partner_qnic_index = ack->getQnic_index(); // qnic index of partner
+
+        QNIC_type my_qnic_type; // qnic type of mine
         int my_qnic_index = -1;
 
         for(auto it = ntable.cbegin(); it != ntable.cend(); ++it){
@@ -160,20 +170,20 @@ void HardwareMonitor::handleMessage(cMessage *msg){
         }
         //RuleSets sent for this node and the partner node.
 
-        long RuleSet_id = createUniqueId();
-        sendLinkTomographyRuleSet(myAddress, partner_address, my_qnic_type, my_qnic_index, RuleSet_id);
+        long RuleSet_id = createUniqueId(); // get ruleset id hash
+        sendLinkTomographyRuleSet(myAddress, partner_address, my_qnic_type, my_qnic_index, RuleSet_id); // send ruleset
         sendLinkTomographyRuleSet(partner_address,myAddress, partner_qnic_type, partner_qnic_index, RuleSet_id);
 
     }else if (dynamic_cast<LinkTomographyResult *>(msg) != nullptr){
         /*Link tomography measurement result/basis from neighbor received.*/
-        LinkTomographyResult *result = check_and_cast<LinkTomographyResult *>(msg);
+        LinkTomographyResult *result = check_and_cast<LinkTomographyResult *>(msg); // result of link tomography
         QNIC local_qnic = search_QNIC_from_Neighbor_QNode_address(result->getPartner_address());//Get QNIC info from neighbor address.
-        auto it = all_temporal_tomography_output_holder[local_qnic.address].find(result->getCount_id());
+        auto it = all_temporal_tomography_output_holder[local_qnic.address].find(result->getCount_id()); // find tomography result with id
         if (it != all_temporal_tomography_output_holder[local_qnic.address].end()){
             EV<<"Data already found.";
-            tomography_outcome temp = it->second;
-            if(result->getSrcAddr() == myAddress){
-                temp.my_basis = result->getBasis();
+            tomography_outcome temp = it->second; // all_temporal_... second
+            if(result->getSrcAddr() == myAddress){ // set tomography conditions
+                temp.my_basis = result->getBasis(); 
                 temp.my_output_is_plus = result->getOutput_is_plus();
                 temp.my_GOD_clean = result->getGOD_clean();
             }else{
@@ -183,8 +193,8 @@ void HardwareMonitor::handleMessage(cMessage *msg){
             }it->second = temp;
         }else{
             EV<<"Fresh data";
-            tomography_outcome temp;
-            if(result->getSrcAddr() == myAddress){
+            tomography_outcome temp; // 
+            if(result->getSrcAddr() == myAddress){ // get tomography conditions?
                 temp.my_basis = result->getBasis();
                 temp.my_output_is_plus = result->getOutput_is_plus();
                 temp.my_GOD_clean = result->getGOD_clean();
@@ -193,11 +203,11 @@ void HardwareMonitor::handleMessage(cMessage *msg){
                 temp.partner_output_is_plus = result->getOutput_is_plus();
                 temp.partner_GOD_clean = result->getGOD_clean();
             }
-            all_temporal_tomography_output_holder[local_qnic.address].insert(std::make_pair(result->getCount_id(), temp));
+            all_temporal_tomography_output_holder[local_qnic.address].insert(std::make_pair(result->getCount_id(), temp)); // push result like (id, result)
         }
         if(result->getFinish()!=-1){
             if(all_temporal_tomography_runningtime_holder[local_qnic.address].tomography_time < result->getFinish()){//Pick the slower tomography time MIN(self,partner).
-                all_temporal_tomography_runningtime_holder[local_qnic.address].Bellpair_per_sec = (double)result->getMax_count()/result->getFinish().dbl();
+                all_temporal_tomography_runningtime_holder[local_qnic.address].Bellpair_per_sec = (double)result->getMax_count()/result->getFinish().dbl(); // the number of bell pairs in one sec
                 all_temporal_tomography_runningtime_holder[local_qnic.address].tomography_measurements = result->getMax_count();
                 all_temporal_tomography_runningtime_holder[local_qnic.address].tomography_time = result->getFinish();
 
@@ -216,29 +226,27 @@ void HardwareMonitor::handleMessage(cMessage *msg){
 
 void HardwareMonitor::finish(){
 
-
     //std::string file_name =  std::string("Tomography_")+std::string(getSimulation()->getNetworkType()->getFullName());
-
-    std::string file_name = tomography_output_filename;
+    std::string file_name = tomography_output_filename; // file of tomography result 
     std::string df = "\"default\"";
-    if(file_name.compare(df)==0){
+    if(file_name.compare(df)==0){ // file name has default or not
         std::cout<<df<<"=="<<file_name<<"\n";
         file_name =  std::string("Tomography_")+std::string(getSimulation()->getNetworkType()->getFullName());
     }else{
         std::cout<<df<<"!="<<file_name<<"\n";
     }
 
-    std::string file_name_dm = file_name+std::string("_dm");
+    std::string file_name_dm = file_name+std::string("_dm"); // file for density matrix
 
     std::ofstream tomography_stats(file_name,std::ios_base::app);
     std::ofstream tomography_dm(file_name_dm,std::ios_base::app);
     std::cout<<"Opened new file to write.\n";
 
-
     //EV<<"This is just a test!\n";
 
     //EV<<"numQnic_total = "<<numQnic_total;
-    for(int i=0; i<numQnic_total; i++){
+    for(int i=0; i<numQnic_total; i++){ // for all qnic
+        // initialize parameter
         int meas_total = 0;
         int GOD_clean_pair_total = 0;
         int GOD_X_pair_total = 0;
@@ -246,11 +254,11 @@ void HardwareMonitor::finish(){
         int GOD_Y_pair_total = 0;
 
         //std::cout<<"\n \n \n \n \n QNIC["<<i<<"] \n";
-        for(auto it =  all_temporal_tomography_output_holder[i].cbegin(); it != all_temporal_tomography_output_holder[i].cend(); ++it){
+        for(auto it = all_temporal_tomography_output_holder[i].cbegin(); it != all_temporal_tomography_output_holder[i].cend(); ++it){
             //EV <<"Count["<< it->first << "] = " << it->second.my_basis << ", " << it->second.my_output_is_plus << ", " << it->second.partner_basis << ", "  << it->second.partner_output_is_plus << " " << "\n";
-            std::string basis_combination = "";
-            basis_combination+=it->second.my_basis;
-            basis_combination+=it->second.partner_basis;
+            std::string basis_combination = ""; //measurement basis combination
+            basis_combination+=it->second.my_basis; //my mes basis
+            basis_combination+=it->second.partner_basis; // partner mes basis
             if(tomography_data[i].count(basis_combination)!=1){
                 //EV<<it->second.my_basis<<", "<<it->second.partner_basis<<" = "<<basis_combination<<"\n";
                 error("Basis combination for tomography not found\n");
