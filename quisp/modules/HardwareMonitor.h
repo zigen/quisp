@@ -95,12 +95,12 @@ class HardwareMonitor : public cSimpleModule
         cModuleType *QNodeType =  cModuleType::get("networks.QNode"); // getting ned here???????????
         cModuleType *SPDCType =  cModuleType::get("networks.SPDC"); 
         cModuleType *HoMType =  cModuleType::get("networks.HoM");
-        bool do_link_level_tomography = false; // do we have link level tomography
-        int num_purification_tomography = 0; // the number of purification 
-        bool X_Purification = false; // do X purification
-        bool Z_Purification = false; // do Z purification
-        int Purification_type = -1; // the type of purification
-        int num_measure; // the number of measurement
+        bool do_link_level_tomography = false;
+        int num_purification = 0;
+        bool X_Purification = false;
+        bool Z_Purification = false;
+        int Purification_type = -1;
+        int num_measure;
 
     public:
         //typedef std::map<int,Interface_inf> Interfaces;//qnic_index -> Interface{qnic_type, initial_fidelity...}

@@ -1,0 +1,158 @@
+version 2
+run General-0-20200222-07:03:59-254
+attr configname General
+attr datetime 20200222-07:03:59
+attr experiment General
+attr inifile Perfect_FixedChannelOnly10_nTimes_separate_XXZPuri_Low_memErr.ini
+attr iterationvars ""
+attr iterationvarsf ""
+attr measurement ""
+attr network ""
+attr processid 254
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+param **.Hgate_error_rate 1/2000
+param **.Hgate_X_error_ratio 0
+param **.Hgate_Y_error_ratio 0
+param **.Hgate_Z_error_ratio 0
+param **.Measurement_error_rate 0.05
+param **.Measurement_X_error_ratio 1
+param **.Measurement_Y_error_ratio 1
+param **.Measurement_Z_error_ratio 1
+param **.Xgate_error_rate 1/2000
+param **.Xgate_X_error_ratio 0
+param **.Xgate_Y_error_ratio 0
+param **.Xgate_Z_error_ratio 0
+param **.Zgate_error_rate 1/2000
+param **.Zgate_X_error_ratio 0
+param **.Zgate_Y_error_ratio 0
+param **.Zgate_Z_error_ratio 0
+param **.CNOTgate_error_rate 0.0
+param **.CNOTgate_IZ_error_ratio 1
+param **.CNOTgate_ZI_error_ratio 1
+param **.CNOTgate_ZZ_error_ratio 1
+param **.CNOTgate_IX_error_ratio 1
+param **.CNOTgate_XI_error_ratio 1
+param **.CNOTgate_XX_error_ratio 1
+param **.CNOTgate_IY_error_ratio 1
+param **.CNOTgate_YI_error_ratio 1
+param **.CNOTgate_YY_error_ratio 1
+param **.memory_X_error_rate 1.11111111e-7
+param **.memory_Y_error_rate 1.11111111e-7
+param **.memory_Z_error_rate 1.11111111e-7
+param **.memory_energy_excitation_rate 0.0000198
+param **.memory_energy_relaxation_rate 0.000000198
+param **.memory_completely_mixed_rate 0
+param **.Initial_notification_timing_buffer "10 s"
+
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] rxBytes:count 1
+attr interpolationmode none
+attr title "received packet byte length, count"
+attr unit bytes
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] rxBytes:sum 0
+attr interpolationmode none
+attr title "received packet byte length, sum"
+attr unit bytes
+statistic Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] rxBytes:histogram
+field count 1
+field mean 0
+field stddev -nan
+field min 0
+field max 0
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr title "received packet byte length, histogram"
+attr unit bytes
+bin	-inf	0
+bin	-0.5	0
+bin	-0.48	0
+bin	-0.46	0
+bin	-0.44	0
+bin	-0.42	0
+bin	-0.4	0
+bin	-0.38	0
+bin	-0.36	0
+bin	-0.34	0
+bin	-0.32	0
+bin	-0.3	0
+bin	-0.28	0
+bin	-0.26	0
+bin	-0.24	0
+bin	-0.22	0
+bin	-0.2	0
+bin	-0.18	0
+bin	-0.16	0
+bin	-0.14	0
+bin	-0.12	0
+bin	-0.1	0
+bin	-0.08	0
+bin	-0.06	0
+bin	-0.04	0
+bin	-0.02	0
+bin	0	1
+bin	0.02	0
+bin	0.04	0
+bin	0.06	0
+bin	0.08	0
+bin	0.1	0
+bin	0.12	0
+bin	0.14	0
+bin	0.16	0
+bin	0.18	0
+bin	0.2	0
+bin	0.22	0
+bin	0.24	0
+bin	0.26	0
+bin	0.28	0
+bin	0.3	0
+bin	0.32	0
+bin	0.34	0
+bin	0.36	0
+bin	0.38	0
+bin	0.4	0
+bin	0.42	0
+bin	0.44	0
+bin	0.46	0
+bin	0.48	0
+bin	0.5	0
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] txBytes:count 0
+attr interpolationmode none
+attr title "transmitting packet byte length, count"
+attr unit bytes
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] txBytes:sum 0
+attr interpolationmode none
+attr title "transmitting packet byte length, sum"
+attr unit bytes
+statistic Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] txBytes:histogram
+field count 0
+field mean -nan
+field stddev nan
+field min nan
+field max nan
+field sum 0
+field sqrsum 0
+attr interpolationmode none
+attr title "transmitting packet byte length, histogram"
+attr unit bytes
+bin	-inf	0
+bin	0	0
+bin	1	0
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] drop:count 0
+attr interpolationmode none
+attr title "dropped packet byte length, count"
+attr unit bytes
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] drop:sum 0
+attr interpolationmode none
+attr title "dropped packet byte length, sum"
+attr unit bytes
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] busy:timeavg 0
+attr interpolationmode sample-hold
+attr title "server busy state, timeavg"
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue[0] qlen:timeavg 0
+attr interpolationmode sample-hold
+attr title "queue length, timeavg"
+scalar Realistic_Layer2_MIM_tomography.EndNode[0].queue
