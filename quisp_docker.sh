@@ -1,9 +1,5 @@
 #!/bin/sh
 IP=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
-issocat=$(lsof -i:6000| grep socat| wc -l)
-pros=$(lsof -i:6000|wc -l)
-int1=1
-int2=2
 if [ -z "$DISPLAY" ]
 then
     echo "Can't detect X11 desplay. If you can't detect where is your display, check ./doc/xhost_trouble_shooting.md"
