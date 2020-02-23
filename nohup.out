@@ -1,8 +1,0 @@
-2020/02/20 17:25:05 socat[43459] E bind(7, {LEN=0 AF=2 0.0.0.0:6000}, 16): Address already in use
-2020/02/20 17:25:13 socat[43583] E bind(7, {LEN=0 AF=2 0.0.0.0:6000}, 16): Address already in use
-2020/02/20 17:25:49 socat[43813] E bind(7, {LEN=0 AF=2 0.0.0.0:6000}, 16): Address already in use
-2020/02/20 17:40:24 socat[44406] E bind(7, {LEN=0 AF=2 0.0.0.0:6000}, 16): Address already in use
-2020/02/20 17:40:27 socat[44414] E connect(7, LEN=2 AF=1 "<anon>", 2): Invalid argument
-2020/02/20 17:40:27 socat[44415] E connect(7, LEN=2 AF=1 "<anon>", 2): Invalid argument
-2020/02/20 17:40:31 socat[44419] E connect(7, LEN=2 AF=1 "<anon>", 2): Invalid argument
-2020/02/20 17:40:31 socat[44420] E connect(7, LEN=2 AF=1 "<anon>", 2): Invalid argument
