@@ -91,10 +91,47 @@ class EnoughResourceClause : public Clause {
         bool checkTerminate(std::map<int,stationaryQubit*>) const override {return false;};
 };
 
+/** EnoughResourceClauseLeft
+ * 
+ * This is checking if swapper have enough resources
+ * for entanglement swapping 
+ * 
+ * TODO: This should be integreated to ordinal enough resource clause
+ * refactor
+*/ 
+class EnoughResourceClauseLeft : public Clause{
+    protected:
+        int num_resource_required_left;
+    public:
+        EnoughResourceClauseLeft(double num_res_l) : Clause(){
+            num_resource_required_left = num_res_l;
+        };
+        bool check(std::map<int, stationaryQubit*>) const override;
+        bool checkTerminate(std::map<int, stationaryQubit*>) const override {return false;};
+};
+
+/** EnoughResourceClauseRight
+ * 
+ * This is checking if swapper have enough resources
+ * for entanglement swapping 
+ * 
+ * TODO: This should be integreated to ordinal enough resource clause.
+ * refactor
+*/ 
+class EnoughResourceClauseRight : public Clause{
+    protected:
+        int num_resource_required_right;
+    public:
+        EnoughResourceClauseRight(double num_res_r) : Clause(){
+            num_resource_required_right = num_res_r;
+        };
+        bool check(std::map<int, stationaryQubit*>) const override;
+        bool checkTerminate(std::map<int, stationaryQubit*>) const override {return false;};
+};
+
 
 
 class NoClause : public Clause {
-
 
     public:
         NoClause() : Clause() {

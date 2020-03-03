@@ -94,8 +94,6 @@ void RuleEngine::handleMessage(cMessage *msg){
             realtime_controller->EmitPhoton(pk->getQnic_index(),pk->getQubit_index(),(QNIC_type) pk->getQnic_type(),pk->getKind());
         }
 
-
-
         else if(dynamic_cast<CombinedBSAresults *>(msg) != nullptr){
             //First, keep all the qubits that were successfully entangled, and reinitialize the failed ones.
             CombinedBSAresults *pk_result = check_and_cast<CombinedBSAresults *>(msg);

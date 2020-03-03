@@ -742,8 +742,6 @@ void HardwareMonitor::sendLinkTomographyRuleSet(int my_address, int partner_addr
 
                 }
 
-
-
                 Rule* Random_measure_tomo = new Rule(RuleSet_id, rule_index);//Let's make nodes select measurement basis randomly, because it it easier.
                 Condition* total_measurements = new Condition();//Technically, there is no condition because an available resource is guaranteed whenever the rule is ran.
                 Clause* measure_count_clause = new MeasureCountClause(num_measure, partner_address, qnic_type , qnic_index, 0);//3000 measurements in total. There are 3*3 = 9 patterns of measurements. So each combination must perform 3000/9 measurements.

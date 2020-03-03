@@ -1,0 +1,1 @@
+EndNode1[0]<-->QuantumChannel{cost=-nan;distance=10km;fidelity=-nan;bellpair_per_sec=-1;tomography_time=-1;tomography_measurements=-1;actualmeas=0; GOD_clean_pair_total=0; GOD_X_pair_total=0; GOD_Y_pair_total=0; GOD_Z_pair_total=0;}<-->Repeater1[0]; F=-nan; X=-nan; Z=-nan; Y=-nan

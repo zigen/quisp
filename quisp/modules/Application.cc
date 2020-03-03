@@ -98,6 +98,9 @@ void Application::handleMessage(cMessage *msg){
     }else if(dynamic_cast<ConnectionSetupRequest *>(msg) != nullptr){
         // if got connection setup request
         send(msg, "toRouter"); // sent message to destination
+    }else if(dynamic_cast<ConnectionSetupResponse *>(msg) != nullptr){
+        // if got connection setup response
+        send(msg, "toRouter");
     }else{
         // other type packet
         delete msg;

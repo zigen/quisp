@@ -52,7 +52,7 @@ class SwappingAction : public Action {
         QNIC_type right_qnic_type;
         int right_qnic_id;
         int right_resource;
-
+        int action_index=0;
 
     public:
         SwappingAction(
@@ -68,9 +68,11 @@ class SwappingAction : public Action {
             right_qnic_id = rqi;
             right_resource = rr;
         };
+        // SwappingAction(unsigned long RuleSet_id, int rule_index, int left_node, int right_node)
 
         //cPacket* run(qnicResources *resources) override;
         //cPacket* run(cModule *re, qnicResources *resources) override;
+        cPacket* run(cModule *re) override;
 };
 
 class PurifyAction : public Action {

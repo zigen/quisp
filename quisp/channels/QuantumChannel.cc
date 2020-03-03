@@ -156,7 +156,7 @@ void QuantumChannel::processMessage(cMessage *msg, simtime_t t, result_t& result
         // This function is wrapping dynamic_cast in c++
         PhotonicQubit *q = check_and_cast<PhotonicQubit *>(msg);
 
-        bool lost = q->getPhotonLost();　// isPhotonLost
+        bool lost = q->getPhotonLost(); // isPhotonLost
         bool Zerr = q->getPauliZerr(); // isPauliZ error
         bool Xerr = q->getPauliXerr(); // isPauliX error
 

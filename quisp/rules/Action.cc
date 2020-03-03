@@ -10,6 +10,7 @@
 #include "tools.h"
 #include <omnetpp.h>
 #include "classical_messages_m.h"
+#include <cstdlib>
 
 
 namespace quisp {
@@ -46,6 +47,60 @@ void Action::removeResource_fromRule(stationaryQubit *qubit){
               break;
           }
     }
+}
+
+cPacket* SwappingAction::run(cModule *re){// classical packet of swapping
+// here is the actual procedure of entanglement swapping
+/* 1. get pointers of both sides of entanglement
+   2. swap pointers between left entanglement and right entanglement with success probability 1/2
+   3. send if the entanglement swapping was success or not
+*/
+    const float success_probabiliry = 1/2; // entanglement swapping is always stochastic
+    // get pointer from each resource
+    stationaryQubit *qubit_left = nullptr;
+    stationaryQubit *qubit_right = nullptr;
+
+    qubit_left = getResource_fromTop(left_resource);
+    qubit_right = getResource_fromTop(right_resource);
+
+    // get entangled partners of both links
+    stationaryQubit *left_entangled_with = qubit_left->entangled_partner;
+    stationaryQubit *right_entangled_with = qubit_right->entangled_partner;
+    
+    EV<<"ENTANGLED PARTNERS!" << &left_entangled_with<<"::"<<&right_entangled_with<<"\n";
+
+    float random = std::rand()/RAND_MAX;
+    if (random > 1 || random < 0){
+        EV<<"ERRRRRRRROOOOOOOOOOOOOOORRRRRRRRRRR"<<"\n";
+    }
+    // Result can be known after tomography
+    if(random>success_probabiliry){
+        // success
+        // change entangle partners!
+        qubit_left->entangled_partner = qubit_right;
+        qubit_right->entangled_partner = qubit_left;
+        removeResource_fromRule(qubit_left); //bell state measurement destroy quantum state 
+        removeResource_fromRule(qubit_right);
+    }else{
+        // fail!
+        removeResource_fromRule(qubit_left);//bell state measurement destroy quantum state 
+        removeResource_fromRule(qubit_right);
+    }
+    //  do tomography and return result
+    // if the entanglement swapping is success
+        SwappingResult *pk = new SwappingResult;
+        pk->setDestAddr(left_partner);
+        pk->setDestAddr(right_partner); // is this doable?
+        pk->setKind(3);
+        pk->setAction_index(action_index);
+        pk->setRule_id(rule_id);
+        pk->setRuleset_id(ruleset_id);
+        action_index++;
+        return pk;
+    // else
+        // Error *pk = new Error;
+        // pk->setError_text("Entangement Swapping Failed!");
+        // return pk;
 }
 
 //Either Z or X purification.
@@ -675,12 +730,6 @@ cPacket* DoubleSelectionDualActionSecond_inv::run(cModule *re) {
     action_index++;
     return pk;
 }
-
-
-
-
-
-
 
 } // namespace rules
 } // namespace quisp

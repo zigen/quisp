@@ -48,6 +48,41 @@ bool EnoughResourceClause::check(std::map<int,stationaryQubit*> resource) const{
     return enough;
 }
 
+// need qnic index?
+bool EnoughResourceClauseLeft::check(std::map<int,stationaryQubit*> resource) const{
+    //std::cout<<"!!In enough clause \n";
+    bool enough_left = false;
+
+    int num_free = 0;
+    for (auto it=resource.begin(); it!=resource.end(); ++it) {
+           if(!it->second->isLocked()){
+               num_free++;
+           }
+           if(num_free >= num_resource_required_left){
+               enough_left = true;
+           }
+    }
+    //std::cout<<"Enough = "<<enough<<"\n";
+    return enough_left;
+}
+
+bool EnoughResourceClauseRight::check(std::map<int,stationaryQubit*> resource) const{
+    //std::cout<<"!!In enough clause \n";
+    bool enough_right = false;
+
+    int num_free = 0;
+    for (auto it=resource.begin(); it!=resource.end(); ++it) {
+           if(!it->second->isLocked()){
+               num_free++;
+           }
+           if(num_free >= num_resource_required_right){
+               enough_right = true;
+           }
+    }
+    //std::cout<<"Enough = "<<enough<<"\n";
+    return enough_right;
+}
+
 /*
 bool MeasureCountClause::check(qnicResources* resources) const {
     //EV<<"MeasureCountClause invoked!!!! \n";

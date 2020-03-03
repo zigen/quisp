@@ -1,0 +1,57 @@
+[filesystem "de133cf0ec86|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "e2fe38650c39|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "c47b58ec99db|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "f1e526fc882e|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "922e4fa727fe|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "0a6846b30613|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "cc7e3c654c19|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "946dae7d248e|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "4f08d73aa0e8|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "b3c041d13d44|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "f99e6a5eea38|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "6399069f24f3|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "27c2d49d44dd|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "73a3ab52bbb5|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "237f5306e3ae|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "108b96c5665c|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "b7e5e8b29443|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "e2ade7acfc03|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
+[filesystem "521b7adc2449|Ubuntu|11.0.6|osxfs"]
+	timestampResolution = 1000 milliseconds
+	minRacyThreshold = 0 nanoseconds
