@@ -285,8 +285,8 @@ void ConnectionManager::handleMessage(cMessage *msg){
 
     // After entanglement swapping, apply tomography.
     Rule *Tomography = new Rule(RuleSet_id, rule_index); // initialize rules
-    Condition* Tomography_condition = new Condition(); // tomography for checking 
-    
+    Condition* Tomography_condition = new Condition(); // tomography between 
+
 
     return EntanglementSwapping;
 }
