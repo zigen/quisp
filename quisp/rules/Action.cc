@@ -88,15 +88,15 @@ cPacket* SwappingAction::run(cModule *re){// classical packet of swapping
     }
     //  do tomography and return result
     // if the entanglement swapping is success
-        SwappingResult *pk = new SwappingResult;
-        pk->setDestAddr(left_partner);
-        pk->setDestAddr(right_partner); // is this doable?
-        pk->setKind(3);
-        pk->setAction_index(action_index);
-        pk->setRule_id(rule_id);
-        pk->setRuleset_id(ruleset_id);
-        action_index++;
-        return pk;
+        // SwappingResult *pk = new SwappingResult;
+        // pk->setDestAddr(left_partner);
+        // pk->setDestAddr(right_partner); // is this doable?
+        // pk->setKind(3);
+        // pk->setAction_index(action_index);
+        // pk->setRule_id(rule_id);
+        // pk->setRuleset_id(ruleset_id);
+        // action_index++;
+        // return pk;
     // else
         // Error *pk = new Error;
         // pk->setError_text("Entangement Swapping Failed!");
