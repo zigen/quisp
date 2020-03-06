@@ -208,7 +208,7 @@ void ConnectionManager::handleMessage(cMessage *msg){
       * Full 1yr email-support (maybe tele-communication too).
       * Psychological support. Financial support.
       */
-      // error("Yay!");
+      error("Yay!");
       delete msg;
       return;
     }else{
@@ -286,7 +286,7 @@ void ConnectionManager::handleMessage(cMessage *msg){
     // After entanglement swapping, apply tomography.
     Rule *Tomography = new Rule(RuleSet_id, rule_index); // initialize rules
     Condition* Tomography_condition = new Condition(); // tomography between 
-
+    Clause* 
 
     return EntanglementSwapping;
 }
