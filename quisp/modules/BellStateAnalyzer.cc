@@ -194,7 +194,6 @@ void BellStateAnalyzer::handleMessage(cMessage *msg){
         right_count++;
         //EV<<"Right = "<<simTime()<<"\n";
     }else{
-        // ?
         error("This shouldn't happen....! Only 2 connections to the BSA allowed");
     }
 

@@ -61,7 +61,7 @@ void Application::initialize(){
     cGate *toRouterGate = gate("toRouter"); // which other they are connected and what are the channel objects associated with the links(from omnetpp doc)
     if(!toRouterGate->isConnected()){
         //Since we only need this module in EndNode, delete it otherwise.
-        deleteThisModule *msg = new deleteThisModule; // ?
+        deleteThisModule *msg = new deleteThisModule;
         scheduleAt(simTime(),msg); // scheduling an event
     }else{
         myAddress = getParentModule()->par("address"); // pointer getParentModule pointing address parameter
@@ -83,11 +83,7 @@ void Application::initialize(){
         }
     }
 }
-/** handleMessage
- * 
- * brief : handling message
- * *msg : pointer of classical message
-*/ 
+
 void Application::handleMessage(cMessage *msg){
 
     if(dynamic_cast<deleteThisModule *>(msg) != nullptr){
@@ -97,10 +93,9 @@ void Application::handleMessage(cMessage *msg){
         delete msg;
     }else if(dynamic_cast<ConnectionSetupRequest *>(msg) != nullptr){
         // if got connection setup request
+        EV<<"got setup request!\n";
         send(msg, "toRouter"); // sent message to destination
-    }else if(dynamic_cast<ConnectionSetupResponse *>(msg) != nullptr){
-        // if got connection setup response
-        send(msg, "toRouter");
+        // setup response is in RuleEngine because it include swapping and application ruleset
     }else{
         // other type packet
         delete msg;

@@ -5,6 +5,7 @@
  *  \date 2018/04/04
  *
  *  \brief RuleEngine
+ *  This module handle only rules.
  */
 
 
@@ -65,7 +66,7 @@ void RuleEngine::handleMessage(cMessage *msg){
 
         if(dynamic_cast<EmitPhotonRequest *>(msg) != nullptr){//From self.
             EmitPhotonRequest *pk = check_and_cast<EmitPhotonRequest *>(msg);
-            cModule *rtc = getParentModule()->getSubmodule("rt");
+            cModule *rtc = getParentModule()->getSubmodule("rt"); // what is rt?
             RealTimeController *realtime_controller = check_and_cast<RealTimeController *>(rtc);
 
             if(burstTrial_outdated(pk->getTrial(), pk->getQnic_address())){//Terminate emission if trial is over already (e.g. the neighbor ran out of free qubits and the BSA already returned the results)
@@ -93,7 +94,6 @@ void RuleEngine::handleMessage(cMessage *msg){
             }
             realtime_controller->EmitPhoton(pk->getQnic_index(),pk->getQubit_index(),(QNIC_type) pk->getQnic_type(),pk->getKind());
         }
-
         else if(dynamic_cast<CombinedBSAresults *>(msg) != nullptr){
             //First, keep all the qubits that were successfully entangled, and reinitialize the failed ones.
             CombinedBSAresults *pk_result = check_and_cast<CombinedBSAresults *>(msg);
@@ -192,20 +192,20 @@ void RuleEngine::handleMessage(cMessage *msg){
            }
         }
         else if(dynamic_cast<PurificationResult *>(msg) != nullptr){
-                   //std::cout<<"!!!!Purification result reveid!!! node["<<parentAddress<<"]\n";
-                   PurificationResult *pkt = check_and_cast<PurificationResult *>(msg);
-                   //std::cout<<"Presult from node["<<pkt->getSrcAddr()<<"]\n";
-                   process_id purification_id;
-                   purification_result pr;
-                   purification_id.ruleset_id = pkt->getRuleset_id();
-                   purification_id.rule_id = pkt->getRule_id();
-                   purification_id.index = pkt->getAction_index();
-                   pr.id = purification_id;
-                   pr.outcome = pkt->getOutput_is_plus();
-                   //stationaryQubit *q = check_and_cast<stationaryQubit *>(pkt->getEntangled_with());
-                   //std::cout<<"Purification result is from node["<<pkt->getSrcAddr()<<"] rid="<< pkt->getRuleset_id()<<"Must be qnic["<<my_qnic_index<<" type="<<my_qnic_type<<"\n";
-                   //std::cout<<"Locked one is "<<pkt->getEntangled_with()<<"in node["<<q->node_address<<"] \n";
-                   storeCheck_Purification_Agreement(pr);
+            //std::cout<<"!!!!Purification result reveid!!! node["<<parentAddress<<"]\n";
+            PurificationResult *pkt = check_and_cast<PurificationResult *>(msg);
+            //std::cout<<"Presult from node["<<pkt->getSrcAddr()<<"]\n";
+            process_id purification_id;
+            purification_result pr;
+            purification_id.ruleset_id = pkt->getRuleset_id();
+            purification_id.rule_id = pkt->getRule_id();
+            purification_id.index = pkt->getAction_index();
+            pr.id = purification_id;
+            pr.outcome = pkt->getOutput_is_plus();
+            //stationaryQubit *q = check_and_cast<stationaryQubit *>(pkt->getEntangled_with());
+            //std::cout<<"Purification result is from node["<<pkt->getSrcAddr()<<"] rid="<< pkt->getRuleset_id()<<"Must be qnic["<<my_qnic_index<<" type="<<my_qnic_type<<"\n";
+            //std::cout<<"Locked one is "<<pkt->getEntangled_with()<<"in node["<<q->node_address<<"] \n";
+            storeCheck_Purification_Agreement(pr);
         }else if(dynamic_cast<DoublePurificationResult *>(msg) != nullptr){
             //std::cout<<"!!!!Purification result reveid!!! node["<<parentAddress<<"]\n";
             DoublePurificationResult *pkt = check_and_cast<DoublePurificationResult *>(msg);
@@ -259,6 +259,45 @@ void RuleEngine::handleMessage(cMessage *msg){
         else if(dynamic_cast<StopEmitting *>(msg)!= nullptr){
             StopEmitting *pkt = check_and_cast<StopEmitting *>(msg);
             terminated_qnic[pkt->getQnic_address()] = true;
+        }
+        else if(dynamic_cast<ConnectionSetupResponse *>(msg)!=nullptr){
+            // get ruleset from stack
+            EV<<"got setup response and swapping ruleset!\n";
+            ConnectionSetupResponse *pkt = check_and_cast<ConnectionSetupResponse *>(msg);
+            
+            process p;
+            // here this qnode takes Ruleset
+            // What we have to do is distinguishing ruleset(swapping or others)
+            p.Rs = pkt->getRuleSet();
+            p.ownner_addr = pkt->getRuleSet()->owner;
+            p.working_partner_addr = pkt->getRuleSet()->entangled_partner;
+            EV<<"got here!"<<parentAddress<<"\n";
+            EV<<"This is owner of ruleSet!!!!!"<<p.ownner_addr<<"\n";
+            EV<<"Is this swapper?\n";
+            if(pkt->getSwap()){
+                EV<<"This node is swapper\n";
+                int process_id = rp.size();//This is temporary because it will not be unique when processes have been deleted.
+                // got swapping RuleSet
+                if(p.Rs->size()>0){
+                    rp.insert(std::make_pair(process_id, p));
+                    EV<<"New process arrived !\n";
+                }else{
+                    error("Empty rule set...");
+                }
+            }else{
+                EV<<"Not swapper, application nodes\n";
+                int process_id = rp.size();//This is temporary because it will not be unique when processes have been deleted.
+                // got swapping RuleSet
+                if(p.Rs->size()>0){
+                    rp.insert(std::make_pair(process_id, p));
+                    EV<<"New process arrived !\n";
+                }else{
+                    error("Empty rule set...");
+                }
+            }
+            // ResourceAllocation();
+            //  do actual BSM
+
         }
 
         for(int i=0; i<number_of_qnics; i++){
@@ -1000,9 +1039,6 @@ void RuleEngine::ResourceAllocation(int qnic_type, int qnic_index){
         if(process->empty()){
             error("RuleSet with no Rule found. Probably not what you want!");
         }
-
-
-
         int assigned = 0;
         for (auto it =  allResources[qnic_type][qnic_index].cbegin(), next_it =  allResources[qnic_type][qnic_index].cbegin(); it !=  allResources[qnic_type][qnic_index].cend(); it = next_it){
              next_it = it; ++next_it;
@@ -1051,8 +1087,7 @@ void RuleEngine::ResourceAllocation(int qnic_type, int qnic_index){
 }
 
 
-
-void RuleEngine::traverseThroughAllProcesses2(){
+void RuleEngine::traverseThroughAllProcesses2(){ // is this for forwarding packet?
 
     int number_of_process = rp.size();//Number of running processes (in all QNICs).
 
@@ -1137,6 +1172,8 @@ void RuleEngine::traverseThroughAllProcesses2(){
                                 //Condition does not meet. Go to next rule. e.g. Fidelity is good enough by doing purification. Next could be swap.
                                 delete pk;
                                 break;
+                            }else if(dynamic_cast<EntanglementSwappingResult *>(pk) != nullptr){
+                                // here send packet of the result 
                             }else{
                                 error("Unknown return packet from action.");
                                 delete pk;

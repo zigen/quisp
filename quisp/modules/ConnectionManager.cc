@@ -29,12 +29,15 @@ class ConnectionManager : public cSimpleModule{
         int myAddress; // source address
         RoutingDaemon *routingdaemon; // from routing daemon
         HardwareMonitor *hardwaremonitor; // from hardware monitor
+        std::string pplication_name;
+        int num_measure;
   protected:
         virtual void initialize() override; 
         virtual void handleMessage(cMessage *msg) override; 
         // generating RuleSet for entanglement swapping
         // virtual RuleSet* generateRuleSet_EntanglementSwapping(unsigned int RuleSet_id, int owner, int left_node, int right_node);
         virtual RuleSet* generateRuleSet_EntanglementSwapping(unsigned int RuleSet_id, int owner, int left_node, QNIC_type lqnic_type, int lqnic_id, int lresource, int right_node, QNIC_type rqnic_type, int rqnic_id, int rresource);
+        virtual RuleSet* generateRuleSet_Application(unsigned int RuleSet_id, int owner, int my_address, int partner_address, QNIC_type qnic_type, int qnic_index);
         // create unique id with hash or something?
         virtual unsigned long createUniqueId();
 };
@@ -49,6 +52,11 @@ void ConnectionManager::initialize(){
   cModule *hm = getParentModule()->getSubmodule("hm");
   hardwaremonitor = check_and_cast<HardwareMonitor *>(hm);
   myAddress = par("address");
+
+  // This is application settings (for different application)
+  // application_name = par("application")
+  // num_measure = par("num_measure"); This didn't work why?
+  num_measure = 7000; // test
 }
 
 
@@ -127,10 +135,6 @@ void ConnectionManager::handleMessage(cMessage *msg){
         path[hop_count] = myAddress;
         // rulesets[hop_count] = new RuleSet(myAddress);
         EV << "Last Qnode on the path => " << path[hop_count] << std::endl;
-        // std::map<int, RuleSet*>rulesets = {};
-        for (int ind = 0; ind<=hop_count; ind++){
-          EV<<"path!!!!!!!"<<path[ind]<<"\n";
-        }
         // Number of division elements
         int divisions = compute_path_division_size(hop_count);
 
@@ -150,34 +154,53 @@ void ConnectionManager::handleMessage(cMessage *msg){
             EV<<"\nThis is one of the stacked link costs....."<<pk->getStack_of_linkCosts(i)<<"\n";
         }
         */
-        //Change int to RuleSet*
-        std::map<std::string, RuleSet*> rulesets = {};
         QNIC_id_pair qnic_pairs;
+        EV<<"path"<<path[0]<<":"<<path[1]<<":"<<path[2]<<"\n";
+        EV<<"swapper"<<swapper[0]<<":"<<swapper[1]<<":"<<swapper[2]<<"\n";
         for (int i=0; i<divisions; i++) {
-          if(swapper[i]>0){
-            EV<<"generate ruleset for " << swapper[i]<<"\n";
-            // 1. Create swapping rules for swapper[i]
-            // Rule * swaprule = new SwapRule(...);
-            // TODO: IMPLEMENT SwapRule that will have two FidelityClause to
-            // check the fidelity of the qubit, and one SwapAction.
-            // rulesets[i] = EntanglementSwapping_Ruleset;
-            // rulesets->setRuleSet(EntanglementSwapping_Ruleset);
-            RuleSet* EntanglementSwapping_Ruleset = this->generateRuleSet_EntanglementSwapping(createUniqueId(), swapper[i], link_left[i], qnic_pairs.fst.type,qnic_pairs.fst.index, 1, link_right[i], qnic_pairs.snd.type, qnic_pairs.snd.index, 1);
-            rulesets[std::to_string(swapper[i])] = EntanglementSwapping_Ruleset;
-            // send this to swapper node.
+          if(swapper[i]>0){// if i is a swapper
+            EV<<"index of swapper i!!!"<<i<<"\n";
             ConnectionSetupResponse *pkr = new ConnectionSetupResponse;
-            pkr->setDestAddr(swapper[i]);
+            pkr->setDestAddr(i+1);
             pkr->setSrcAddr(myAddress);
             pkr->setKind(2);
-            pkr->setRuleSet(rulesets[std::to_string(swapper[i])]);
-            // this might not correct
+            // 1. Create swapping rules for swapper[i]
+            if(i-1>0){
+              qnic_pairs = pk->getStack_of_QNICs(i-1); // this might be error
+            }
+            RuleSet* EntanglementSwapping_Ruleset = this->generateRuleSet_EntanglementSwapping(createUniqueId(), i+1, link_left[i], qnic_pairs.fst.type, qnic_pairs.fst.index, 1, link_right[i], qnic_pairs.snd.type, qnic_pairs.snd.index, 1);
+            // Rule set is like {"1": RuleSet, "2": RuleSet....}
+            // return this stack and get the rules of each nodes
+            // rulesets[std::to_string(swapper[i])] = EntanglementSwapping_Ruleset;
+            // pkr->setStack_of_RuleSets(i, EntanglementSwapping_Ruleset);
+            pkr->setRuleSet(EntanglementSwapping_Ruleset);
+            pkr->doSwap(true);
             EV<<"set ruleset to packet!"<<"\n";
             send(pkr, "RouterPort$o");
-            EV<<"sent!"<<"\n";
+            EV<<"sent! to:"<<i<<"\n";      
           }else{
-            // not swapper
-          }
-        }                
+            EV<<"index of nodes i "<<i<<"\n";
+            // We also have to create rulesets for non swapper nodes
+            // This application must be changed according to what we're gonna try to do (QKD, teleportaition whatever...)
+            // this might require both qnic type
+            ConnectionSetupResponse *pkr = new ConnectionSetupResponse;
+            pkr->setDestAddr(i+1);
+            pkr->setSrcAddr(myAddress);
+            pkr->setKind(2);
+            if(i-1>0){
+              qnic_pairs = pk->getStack_of_QNICs(i-1); // this might be error
+            }
+            RuleSet* tomography_RuleSet = generateRuleSet_Application(createUniqueId(), i+1, myAddress, i+1, qnic_pairs.fst.type, qnic_pairs.fst.index);
+            // rulesets[std::to_string(i)] = tomography_RuleSet;
+            // pkr->setStack_of_RuleSets(i, tomography_RuleSet);
+            pkr->setRuleSet(tomography_RuleSet);
+            pkr->doSwap(false);
+            EV<<"set ruleset to packet!"<<"\n";
+            send(pkr, "RouterPort$o");
+            EV<<"sent! to:"<<i<<"\n";    
+          } 
+        }   
+        // this might not correct
         // Go over every division
         for (int i=0; i<divisions; i++) {
           if (swapper[i]>0){
@@ -208,12 +231,10 @@ void ConnectionManager::handleMessage(cMessage *msg){
       * Full 1yr email-support (maybe tele-communication too).
       * Psychological support. Financial support.
       */
-      error("Yay!");
+      // error("Yay!")/;/
       delete msg;
       return;
     }else{
-      EV<<"Dist is different from my Address! actual_dist :"<<actual_dst<<"\n";
-      EV<<"This packet is from "<<myAddress<<" to "<<actual_dst<<"\n";
       int local_qnic_address_to_actual_dst = routingdaemon->return_QNIC_address_to_destAddr(actual_dst);
       if(local_qnic_address_to_actual_dst==-1){//is not found
           error("QNIC to destination not found");
@@ -249,8 +270,6 @@ void ConnectionManager::handleMessage(cMessage *msg){
           send(pk,"RouterPort$o");
         }
       }
-  }else if (dynamic_cast<ConnectionSetupResponse *>(msg)!= nullptr){
-    // write handling pattern when node get setup request ack
   }
 }
 
@@ -281,15 +300,38 @@ void ConnectionManager::handleMessage(cMessage *msg){
     quisp::rules::Action* enswap_action = new SwappingAction(left_node, lqnic_type, lqnic_id, lresource, right_node, rqnic_type, rqnic_id, rresource);
     EnSWAP->setAction(enswap_action);
     EntanglementSwapping->addRule(EnSWAP); // we need to return the result of bsa
-    rule_index++;
-
-    // After entanglement swapping, apply tomography.
-    Rule *Tomography = new Rule(RuleSet_id, rule_index); // initialize rules
-    Condition* Tomography_condition = new Condition(); // tomography between 
-    Clause* 
+    // rule_index++;
 
     return EntanglementSwapping;
 }
+
+  RuleSet* ConnectionManager:: generateRuleSet_Application(unsigned int RuleSet_id, int owner, int my_address, int partner_address, QNIC_type qnic_type, int qnic_index){
+    // In this example, application is only tomography. FIXME: take from ini file
+    std::string application_name = "tomography";
+    // we need to extend this for multiple tasks
+    int rule_index=0;
+    RuleSet* tomography_ruleset = new RuleSet(RuleSet_id, owner, my_address, partner_address);
+    if (application_name == "tomography"){
+      Rule* tomography = new Rule(RuleSet_id, rule_index);
+      // condition for tomography
+      Condition* total_measurements = new Condition();
+      Clause* measurement_count_clause = new MeasureCountClause(num_measure, partner_address, qnic_type, qnic_index, 0);
+      Clause* resource_clause = new EnoughResourceClause(1);
+      total_measurements->addClause(measurement_count_clause);
+      total_measurements->addClause(resource_clause);
+      tomography->setCondition(total_measurements);
+      // actions for tomography
+      quisp::rules::Action* measure = new RandomMeasureAction(partner_address, qnic_type, qnic_index, 0, my_address, num_measure);
+      tomography->setAction(measure);
+
+      tomography_ruleset->addRule(tomography);
+      tomography_ruleset->finalize();
+      // rule_index++;
+      return tomography_ruleset;
+    }else{
+      error("Can't recognize application!");
+    }
+  }
 
 } // namespace modules
 } // namespace quisp
