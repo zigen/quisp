@@ -190,14 +190,30 @@ void ConnectionManager::handleMessage(cMessage *msg){
             if(i-1>0){
               qnic_pairs = pk->getStack_of_QNICs(i-1); // this might be error
             }
-            RuleSet* tomography_RuleSet = generateRuleSet_Application(createUniqueId(), i+1, myAddress, i+1, qnic_pairs.fst.type, qnic_pairs.fst.index);
-            // rulesets[std::to_string(i)] = tomography_RuleSet;
+            if(i == 0){
+              // source!
+              // This must be fixed! FIXME
+              connection_setup_inf src_inf = hardwaremonitor->return_setupInf(pk->getSrcAddr());
+              RuleSet* tomography_RuleSet = generateRuleSet_Application(createUniqueId(), i+1, i+1, 2, src_inf.qnic.type, 3);
+              // rulesets[std::to_string(i)] = tomography_RuleSet;
             // pkr->setStack_of_RuleSets(i, tomography_RuleSet);
-            pkr->setRuleSet(tomography_RuleSet);
-            pkr->doSwap(false);
-            EV<<"set ruleset to packet!"<<"\n";
-            send(pkr, "RouterPort$o");
-            EV<<"sent! to:"<<i<<"\n";    
+              pkr->setRuleSet(tomography_RuleSet);
+              pkr->doSwap(false);
+              EV<<"set ruleset to packet!"<<"\n";
+              send(pkr, "RouterPort$o");
+              EV<<"sent! to:"<<i<<"\n"; 
+            }else if(i == 1){
+              // dist!
+              connection_setup_inf src_inf = hardwaremonitor->return_setupInf(pk->getSrcAddr());
+              RuleSet* tomography_RuleSet = generateRuleSet_Application(createUniqueId(), i+1, i+1, 1, src_inf.qnic.type, 1);
+              // rulesets[std::to_string(i)] = tomography_RuleSet;
+              // pkr->setStack_of_RuleSets(i, tomography_RuleSet);
+              pkr->setRuleSet(tomography_RuleSet);
+              pkr->doSwap(false);
+              EV<<"set ruleset to packet!"<<"\n";
+              send(pkr, "RouterPort$o");
+              EV<<"sent! to:"<<i<<"\n"; 
+            }
           } 
         }   
         // this might not correct

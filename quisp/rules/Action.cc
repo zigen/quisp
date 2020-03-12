@@ -55,17 +55,18 @@ cPacket* SwappingAction::run(cModule *re){// classical packet of swapping
    2. swap pointers between left entanglement and right entanglement with success probability 1/2
    3. send if the entanglement swapping was success or not
 */
-    const float success_probabiliry = 1/2; // entanglement swapping is always stochastic
-    // get pointer from each resource
-    stationaryQubit *qubit_left = nullptr;
-    stationaryQubit *qubit_right = nullptr;
 
-    qubit_left = getResource_fromTop(left_resource);
-    qubit_right = getResource_fromTop(right_resource);
+    float success_probabiliry = 1/2; // entanglement swapping is always stochastic
+    // get pointer from each resource
+    stationaryQubit *left_qubit = nullptr;
+    stationaryQubit *right_qubit = nullptr;
+
+    left_qubit = getResource_fromTop(left_resource);
+    right_qubit = getResource_fromTop(right_resource);
 
     // get entangled partners of both links
-    stationaryQubit *left_entangled_with = qubit_left->entangled_partner;
-    stationaryQubit *right_entangled_with = qubit_right->entangled_partner;
+    stationaryQubit *left_entangled_with = left_qubit->entangled_partner;
+    stationaryQubit *right_entangled_with = right_qubit->entangled_partner;
     
     EV<<"ENTANGLED PARTNERS!" << &left_entangled_with<<"::"<<&right_entangled_with<<"\n";
 
@@ -77,30 +78,51 @@ cPacket* SwappingAction::run(cModule *re){// classical packet of swapping
     if(random>success_probabiliry){
         // success
         // change entangle partners!
-        qubit_left->entangled_partner = qubit_right;
-        qubit_right->entangled_partner = qubit_left;
-        removeResource_fromRule(qubit_left); //bell state measurement destroy quantum state 
-        removeResource_fromRule(qubit_right);
+        left_qubit->entangled_partner = right_qubit;
+        right_qubit->entangled_partner = left_qubit;
+        removeResource_fromRule(left_qubit); //bell state measurement destroy quantum state 
+        removeResource_fromRule(right_qubit);
+        RuleEngine *rule_engine = check_and_cast<RuleEngine *>(re);
+
+        rule_engine->freeConsumedResource(left_qnic_id, left_qubit, left_qnic_type);//Remove from entangled resource list.
+        rule_engine->freeConsumedResource(right_qnic_id, right_qubit, right_qnic_type);//Remove from entangled resource list.
+
+        EntanglementSwappingResult *pk = new EntanglementSwappingResult;
+        EV<<"Packet created!\n";
+        pk->setDestAddr(left_partner);
+        pk->setDestAddr(right_partner); // is this doable?
+        pk->setKind(1);
+        pk->setSuccess(true); // This must be wrong. we can't know if the resource is entangled or not without operations
+        pk->setRule_id(rule_id);
+        pk->setRuleSet_id(ruleset_id);
+        // action_index++;
+        return pk;
     }else{
         // fail!
-        removeResource_fromRule(qubit_left);//bell state measurement destroy quantum state 
-        removeResource_fromRule(qubit_right);
+        removeResource_fromRule(left_qubit);//bell state measurement destroy quantum state 
+        removeResource_fromRule(right_qubit);
+        RuleEngine *rule_engine = check_and_cast<RuleEngine *>(re);
+
+        // free resource
+        rule_engine->freeConsumedResource(left_qnic_id, left_qubit, left_qnic_type);//Remove from entangled resource list.
+        rule_engine->freeConsumedResource(right_qnic_id, right_qubit, right_qnic_type);//Remove from entangled resource list.
+
+        EntanglementSwappingResult *pk = new EntanglementSwappingResult;
+        EV<<"Packet created!\n";
+        pk->setDestAddr(left_partner);
+        pk->setDestAddr(right_partner); // is this doable?
+        pk->setKind(1);
+        pk->setSuccess(false);
+        pk->setRule_id(rule_id);
+        pk->setRuleSet_id(ruleset_id);
+        // action_index++;
+        return pk;
+        
     }
+    
     //  do tomography and return result
     // if the entanglement swapping is success
-        // SwappingResult *pk = new SwappingResult;
-        // pk->setDestAddr(left_partner);
-        // pk->setDestAddr(right_partner); // is this doable?
-        // pk->setKind(3);
-        // pk->setAction_index(action_index);
-        // pk->setRule_id(rule_id);
-        // pk->setRuleset_id(ruleset_id);
-        // action_index++;
-        // return pk;
-    // else
-        // Error *pk = new Error;
-        // pk->setError_text("Entangement Swapping Failed!");
-        // return pk;
+
 }
 
 //Either Z or X purification.
@@ -400,13 +422,13 @@ cPacket* RandomMeasureAction::run(cModule *re) {
         pk->setError_text("Qubit not found for measurement.");
         return pk;
     }else{
-
         measurement_outcome o = qubit->measure_density_independent();
         current_count++;
 
         //Delete measured resource from the tracked list of resources.
         removeResource_fromRule(qubit);//Remove from resource list in this Rule.
         RuleEngine *rule_engine = check_and_cast<RuleEngine *>(re);
+        EV<<"here!"<<qnic_id<<":"<<qubit<<":"<<qnic_type<<"\n";
         rule_engine->freeConsumedResource(qnic_id, qubit, qnic_type);//Remove from entangled resource list.
         //Deleting done
 
