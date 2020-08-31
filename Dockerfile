@@ -1,7 +1,16 @@
 #!/usr/bin/env docker build --build-arg VERSION=5.6 -t omnetpp/omnetpp-gui:u18.04-5.6 .
 FROM omnetpp/omnetpp-base:u18.04 as base
-RUN apt-get update -y && apt install -y --no-install-recommends qt5-default libqt5opengl5-dev \
-            libgtk-3-0 libwebkitgtk-3.0-0 default-jre osgearth libeigen3-dev cmake g++
+RUN apt-get update -y && apt install -y gnupg2 && \
+    echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main" >> /etc/apt/sources.list && \
+    echo "deb-src http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main" >> /etc/apt/sources.list && \
+    wget -O tmp.key https://apt.llvm.org/llvm-snapshot.gpg.key && apt-key add tmp.key && \
+    apt-get update -y && apt install -y --no-install-recommends \
+    qt5-default libqt5opengl5-dev libgtk-3-0 libwebkitgtk-3.0-0 default-jre \
+    osgearth libeigen3-dev cmake clang-11 clang-tidy-11 clang-format-11 && \
+    ln -s -f /usr/bin/clang-11 /usr/bin/clang && \
+    ln -s -f /usr/bin/clang++-11 /usr/bin/clang++ && \
+    ln -s -f /usr/bin/clang-tidy-11 /usr/bin/clang-tidy && \
+    ln -s -f /usr/bin/clang-format-11 /usr/bin/clang-format 
 
 # first stage - build OMNeT++ with GUI
 FROM base as builder
@@ -16,7 +25,7 @@ WORKDIR /root/omnetpp
 ENV PATH /root/omnetpp/bin:$PATH
 # remove unused files and build
 RUN ./configure WITH_OSG=no　&& \
-    make -j $(nproc) MODE=release base && \
+    make -j $(nproc) PREFER_CLANG=yes MODE=release base && \
     rm -r doc out test samples misc config.log config.status
 
 # second stage - copy only the final binaries (to get rid of the 'out' folder and reduce the image size)
