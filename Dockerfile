@@ -1,7 +1,8 @@
 #!/usr/bin/env docker build --build-arg VERSION=5.6 -t omnetpp/omnetpp-gui:u18.04-5.6 .
 FROM omnetpp/omnetpp-base:u18.04 as base
 RUN apt-get update -y && apt install -y --no-install-recommends qt5-default libqt5opengl5-dev \
-    libgtk-3-0 libwebkitgtk-3.0-0 default-jre osgearth libeigen3-dev cmake g++ gdb
+    libgtk-3-0 libwebkitgtk-3.0-0 default-jre osgearth libeigen3-dev cmake g++ gdb \
+    clang-format clang-tidy
 
 # first stage - build OMNeT++ with GUI
 FROM base as builder
@@ -9,8 +10,9 @@ FROM base as builder
 ARG VERSION
 WORKDIR /root
 RUN wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-$VERSION/omnetpp-$VERSION-src-linux.tgz \
-         --referer=https://omnetpp.org/ -O omnetpp-src-linux.tgz --progress=dot:giga && \
-         tar xf omnetpp-src-linux.tgz && rm omnetpp-src-linux.tgz
+    --referer=https://omnetpp.org/ -O omnetpp-src-linux.tgz --progress=dot:giga && \
+    tar xf omnetpp-src-linux.tgz && rm omnetpp-src-linux.tgz
+
 RUN mv omnetpp-$VERSION omnetpp
 WORKDIR /root/omnetpp
 ENV PATH /root/omnetpp/bin:$PATH
