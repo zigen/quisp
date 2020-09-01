@@ -1,5 +1,6 @@
 ---
 Checks:          'clang-diagnostic-*,clang-analyzer-*'
+#Checks:          'clang-diagnostic-*,clang-analyzer-*,readability-identifier-naming'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
@@ -25,5 +26,25 @@ CheckOptions:
     value:           llvm
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL'
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           UPPER_CASE 
+  - key:             readability-identifier-naming.StaticConstantCase
+    value:           UPPER_CASE 
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.EnumCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.FunctionCase
+    value:           camelBack
+  - key:             readability-identifier-naming.MemberCase
+    value:           camelBack 
+  - key:             readability-identifier-naming.ParameterCase
+    value:           lower_case
+  - key:             readability-identifier-naming.UnionCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.VariableCase
+    value:           camelBack 
+  - key:             readability-identifier-naming.VariableSuffix
+    value:           '' 
 ...
 
