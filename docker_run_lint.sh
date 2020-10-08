@@ -1,6 +1,6 @@
 #!/bin/sh
 echo $TRAVIS
-if [ " $TRAVIS" == " true" ]; then
+if [[ " $TRAVIS" == " true" ]]; then
     DIFF=$(git diff --name-only $TRAVIS_COMMIT_RANGE)
     echo $DIFF
     SRCS=$(echo $DIFF | tr " " "\n" | grep 'quisp/.*.cc$' | tr "\n" " ")
