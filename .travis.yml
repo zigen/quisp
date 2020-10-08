@@ -13,7 +13,7 @@ jobs:
       - COMPILER=g++-9.2
     addons:
       apt:
-        sources: ['ubuntu-toolchain-r-test']
+        sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty']
 
 services:
   - docker
