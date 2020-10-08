@@ -17,10 +17,12 @@ install:
   - sudo apt-get update -y 
   - sudo apt install -y --no-install-recommends libeigen3-dev cmake g++ clang-format clang-tidy
   - sudo apt-get clean
+  - cd ..
   - wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-$VERSION/omnetpp-$VERSION-src-linux.tgz --referer=https://omnetpp.org/ -O omnetpp-src-linux.tgz --progress=dot:giga && tar xf omnetpp-src-linux.tgz && rm omnetpp-src-linux.tgz
   - ls -la
   - pwd
-  - cd omnetpp-src-linux && ./configure WITH_TKENV=no WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no &&  make -j $(nproc)
+  - cd omnetpp-$VERSION && ./configure WITH_TKENV=no WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no &&  make -j $(nproc)
+  - cd ../quisp
 
 
 script:
