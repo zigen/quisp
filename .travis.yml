@@ -22,8 +22,8 @@ install:
   - docker build -f ./Dockerfile.travis --build-arg GTEST_VERSION=1.10.0 -t quisp .
 
 script:
-  - sh docker_run_lint.sh
-  - sh docker_run_test.sh
+  - bash docker_run_lint.sh
+  - bash docker_run_test.sh
   - cd test && sudo python -m unittest discover && sudo rm testresults.txt && echo "test done"
 branches:
   only:

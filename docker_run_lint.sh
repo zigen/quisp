@@ -1,13 +1,13 @@
 #!/bin/bash
 echo $TRAVIS
-if [ X"$TRAVIS" == X"true" ]; then
+if [ "$TRAVIS" = "true" ]; then
     DIFF=$(git diff --name-only $TRAVIS_COMMIT_RANGE)
     echo $DIFF
     SRCS=$(echo $DIFF | tr " " "\n" | grep 'quisp/.*.cc$' | tr "\n" " ")
     HEADERS=$(echo $DIFF | tr " " "\n" | grep 'quisp/.*.h$' | tr "\n" ",")
     OPTS="-O3 -DNDEBUG=1 -MMD -MP -MF tidy.d -fPIC -Wno-deprecated-register -Wno-unused-function -fno-omit-frame-pointer -DHAVE_SWAPCONTEXT -DXMLPARSER=libxml -DPREFER_QTENV -DWITH_QTENV -DWITH_PARSIM -DWITH_NETBUILDER -DWITH_OSGEARTH -I/usr/include/eigen3 -I./quisp -I/root/omnetpp/include"
 
-    if [ "$SRCS" == "" ]; then 
+    if [ "$SRCS" = "" ]; then 
         echo "no change"
         exit 0
     fi
