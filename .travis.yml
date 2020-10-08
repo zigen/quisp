@@ -14,15 +14,13 @@ jobs:
 env:
   - HOGE=fugafuga
   - PIYO="piyopiyo"
-  global:
-    - FOO=bar
-    - VERSION=5.6
 
 services:
   - docker
 
 install:
   - env
+  - echo $HOGE $PIYO
   - sudo apt-get update -y 
   - sudo apt install -y --no-install-recommends libeigen3-dev cmake g++ clang-format clang-tidy
   - sudo apt-get clean
