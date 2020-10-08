@@ -8,19 +8,12 @@ jobs:
     compiler: gcc
     env:
       - COMPILER=g++-9.2
+      - VERSION=5.6
     addons:
       apt:
         sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty']
-env:
-  - HOGE=fugafuga
-  - PIYO="piyopiyo"
-
-services:
-  - docker
 
 install:
-  - env
-  - echo $HOGE $PIYO
   - sudo apt-get update -y 
   - sudo apt install -y --no-install-recommends libeigen3-dev cmake g++ clang-format clang-tidy
   - sudo apt-get clean
