@@ -1,4 +1,6 @@
 #!/bin/bash
+pwd
+ls -la
 docker run --rm -i --name quisp -v "$(pwd):/root/quisp" -u "$(id -u):$(id -g)" quisp /bin/sh <<-EOF
     ls -la
     pwd
