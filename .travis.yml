@@ -13,19 +13,17 @@ jobs:
       apt:
         sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty']
 
+services:
+  - docker
+
 install:
   - sudo apt-get update -y 
-  - sudo apt install -y -q --no-install-recommends libeigen3-dev cmake g++ clang-format clang-tidy
   - sudo apt-get clean
-  - cd ..
-  - wget https://github.com/omnetpp/omnetpp/releases/download/omnetpp-$VERSION/omnetpp-$VERSION-src-linux.tgz --referer=https://omnetpp.org/ -O omnetpp-src-linux.tgz --progress=dot:giga && tar xf omnetpp-src-linux.tgz && rm omnetpp-src-linux.tgz
-  - ls -la
-  - pwd
-  - cd omnetpp-$VERSION && export PATH=`pwd`/bin:$PATH && ./configure WITH_TKENV=no WITH_QTENV=no WITH_OSG=no WITH_OSGEARTH=no &&  make -j $(nproc)
-  - cd ../quisp
-
+  - docker build -f ./Dockerfile.travis --build-arg GTEST_VERSION=1.10.0 -t quisp .
 
 script:
+  - sh docker_run_lint.sh
+  - sh docker_run_test.sh
   - cd test && sudo python -m unittest discover && sudo rm testresults.txt && echo "test done"
 branches:
   only:
