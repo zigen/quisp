@@ -12,7 +12,7 @@ if [ "$TRAVIS" = "true" ]; then
         exit 0
     fi
 
-docker run --rm  -i --name quisp -e TRAVIS -e TRAVIS_COMMIT_RANGE -v "$(pwd):/root/quisp" -u "$(id -u):$(id -g)" quisp /bin/sh <<-EOF
+docker run --rm  -i --name quisp -e TRAVIS -e TRAVIS_COMMIT_RANGE -v "$TRAVIS_BUILD_DIR:/root/quisp" -u "$(id -u):$(id -g)" quisp /bin/sh <<-EOF
     cd /root/quisp
     clang-tidy -warnings-as-errors="*" -header-filter="$HEADERS" $SRCS -- $OPTS
 EOF
