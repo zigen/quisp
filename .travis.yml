@@ -11,14 +11,12 @@ jobs:
       - VERSION=5.6
     addons:
       apt:
-        sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-trusty']
+        sources: ['ubuntu-toolchain-r-test']
 
 services:
   - docker
 
 install:
-  - sudo apt-get update -y 
-  - sudo apt-get clean
   - docker build -f ./Dockerfile.travis --build-arg GTEST_VERSION=1.10.0 -t quisp .
 
 script:
