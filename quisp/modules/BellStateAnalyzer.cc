@@ -29,7 +29,7 @@ class BellStateAnalyzer : public cSimpleModule {
  private:
   // for performance analysis
   int n_res = 0;
-  simsignal_t GOD_num_resSignal;
+    simsignal_t GOD_num_resSignal;
 
   // parameters
   double darkcount_probability;
@@ -113,7 +113,7 @@ void BellStateAnalyzer::initialize() {
   left_statQubit_ptr = nullptr;
   right_statQubit_ptr = nullptr;
   right_photon_lost = false;
-  left_photon_lost = false;
+    left_photon_lost = false;
 }
 
 /*
