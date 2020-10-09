@@ -23,7 +23,7 @@ install:
 
 script:
   - bash docker_run_lint.sh
-  - docker run --rm -i -v "`pwd`:/root/quisp" quisp /bin/bash -c "ls -la && pwd && ls -la /root"
+  - docker run --rm -i -v "$TRAVIS_BUILD_DIR:/root/quisp" quisp /bin/bash -c "ls -la && pwd && ls -la /root"
   - bash docker_run_test.sh
   - cd test && sudo python -m unittest discover && sudo rm testresults.txt && echo "test done"
 branches:
