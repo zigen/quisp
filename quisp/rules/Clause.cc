@@ -26,8 +26,8 @@ bool FidelityClause::check(std::multimap<int, StationaryQubit*> resource) const 
   /*checkQnic();//This is not doing anything...
   if(qubit = getQubit(resources, qnic_type, qnic_id, partner, resource)){
       return (qubit->getFidelity() >= threshold);
-  }
-  return false;*/
+  }*/
+  return false;
 }
 
 bool EnoughResourceClause::check(std::multimap<int, StationaryQubit*> resource) const {
@@ -168,6 +168,7 @@ bool PurificationCountClause::check(std::multimap<int, StationaryQubit*> resourc
   }else{
       return false;
   }*/
+  return false;
 }
 
 /*
