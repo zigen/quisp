@@ -59,7 +59,7 @@ void ConnectionManager::handleMessage(cMessage *msg) {
     }
     bool is_qnic_available = !isQnicBusy(dst_inf->qnic.address);
     bool requested_by_myself = actual_src == my_address;
-    
+
     if (requested_by_myself) {
       if (is_qnic_available) {
         // reserve the qnic and relay the request to the next node
@@ -259,7 +259,7 @@ void ConnectionManager::respondToRequest(ConnectionSetupRequest *req) {
     // TODO: treat measurement node as a ordinal qnode
     // So far, ABSA measurement is the same as HoM
     std::vector<int> rgs_nodes;
-    // 2. 
+    // 2.
     EV<<"Request has been arrived!"<<"\n";
     // What the path info should be like?
     // Premise: Assume there are only absa connections (odd components are source and even components are absa)
@@ -287,7 +287,7 @@ void ConnectionManager::respondToRequest(ConnectionSetupRequest *req) {
       for (int i = 0; i < divisions; i++) {
         std::vector<int> partners;
         if (swapper[i] > 0) {
-          EV << link_left[i] << "---------------" << swapper[i] << "----------------" << link_right[i] << "\n"; 
+          EV << link_left[i] << "---------------" << swapper[i] << "----------------" << link_right[i] << "\n";
           EV_DEBUG << link_left[i] << "---------------" << swapper[i] << "----------------" << link_right[i] << "\n";
           partners.push_back(link_left[i]);
           partners.push_back(link_right[i]);
@@ -336,6 +336,7 @@ void ConnectionManager::respondToRequest(ConnectionSetupRequest *req) {
 
     // create RuleSet for all nodes!
     int num_resource = req->getNumber_of_required_Bellpairs();
+    double required_fidelity = req->getRequiredFidelity();
     int intermediate_node_size = req->getStack_of_QNodeIndexesArraySize();
     for (int i = 0; i <= intermediate_node_size; i++) {
       auto itr = std::find(swappers.begin(), swappers.end(), path.at(i));
@@ -365,9 +366,9 @@ void ConnectionManager::respondToRequest(ConnectionSetupRequest *req) {
         RuleSet *ruleset;
         int owner = path.at(i);
         if (i == 0) {  // if this is initiator
-          ruleset = generateTomographyRuleSet(owner, path.at(path.size() - 1), num_measure, qnics.at(qnics.size() - 1).fst.type, qnics.at(qnics.size() - 1).fst.index, num_resource);
+          ruleset = generateTomographyRuleSet(owner, path.at(path.size() - 1), num_measure, qnics.at(0).snd.type, qnics.at(0).snd.index, num_resource);
         } else {  // if this is responder
-          ruleset = generateTomographyRuleSet(owner, path.at(0), num_measure, qnics.at(0).snd.type, qnics.at(0).snd.index, num_resource);
+          ruleset = generateTomographyRuleSet(owner, path.at(0), num_measure, qnics.at(qnics.size() - 1).fst.type, qnics.at(qnics.size() - 1).fst.index, num_resource);
         }
 
         ConnectionSetupResponse *pkr = new ConnectionSetupResponse("ConnSetupResponse(Tomography)");
@@ -476,7 +477,6 @@ SwappingConfig ConnectionManager::generateSwappingConfig(int swapper_address, st
   if (right_self_qnic.type == QNIC_RP || left_self_qnic.type == QNIC_RP || right_partner_qnic.type == QNIC_RP || left_partner_qnic.type == QNIC_RP) {
     error("MSM link not implemented");
   }
-
   SwappingConfig config;
   config.left_partner = left_partner;
   config.lqnic_type = left_partner_qnic.type;
@@ -515,7 +515,7 @@ void ConnectionManager::relayRequestToNextHop(ConnectionSetupRequest *req) {
   // Use the QNIC address to find the next hop QNode, by asking the Hardware Monitor (neighbor table).
   auto dst_info = hardware_monitor->findConnectionInfoByQnicAddr(dst_qnic_addr);
   auto src_info = hardware_monitor->findConnectionInfoByQnicAddr(src_qnic_addr);
-  
+
   int num_accumulated_nodes = req->getStack_of_QNodeIndexesArraySize();
   int num_accumulated_costs = req->getStack_of_linkCostsArraySize();
   int num_accumulated_pair_info = req->getStack_of_QNICsArraySize();
@@ -650,8 +650,8 @@ RuleSet *ConnectionManager::generateEntanglementSwappingRuleSet(int owner, Swapp
   unsigned long ruleset_id = createUniqueId();
   int rule_index = 0;
 
-  Clause *resource_clause_left = new EnoughResourceClauseLeft(conf.left_partner, conf.lres);
-  Clause *resource_clause_right = new EnoughResourceClauseRight(conf.right_partner, conf.rres);
+  Clause *resource_clause_left = new EnoughResourceClause(conf.left_partner, conf.lres);
+  Clause *resource_clause_right = new EnoughResourceClause(conf.right_partner, conf.rres);
 
   Condition *condition = new Condition();
   condition->addClause(resource_clause_left);
@@ -661,7 +661,7 @@ RuleSet *ConnectionManager::generateEntanglementSwappingRuleSet(int owner, Swapp
                                                     conf.rqnic_type, conf.rqnic_index, conf.rqnic_address, conf.rres, conf.self_left_qnic_index, conf.self_left_qnic_type,
                                                     conf.self_right_qnic_index, conf.self_right_qnic_type);
 
-  Rule *rule = new Rule(ruleset_id, rule_index);
+  Rule *rule = new Rule(ruleset_id, rule_index, "entanglement swapping");
   rule->setCondition(condition);
   rule->setAction(action);
 
@@ -677,12 +677,14 @@ RuleSet *ConnectionManager::generateEntanglementSwappingRuleSet(int owner, Swapp
 RuleSet *ConnectionManager::generateTomographyRuleSet(int owner, int partner, int num_of_measure, QNIC_type qnic_type, int qnic_index, int num_resources) {
   unsigned long ruleset_id = createUniqueId();
 
+  EV<<"tomo_rule"<<ruleset_id<<"\n";
+
   int rule_index = 0;
   RuleSet *tomography = new RuleSet(ruleset_id, owner, partner);
-  Rule *rule = new Rule(ruleset_id, rule_index);
+  Rule *rule = new Rule(ruleset_id, rule_index, "tomography");
 
   // 3000 measurements in total. There are 3*3 = 9 patterns of measurements. So each combination must perform 3000/9 measurements.
-  Clause *count_clause = new MeasureCountClause(num_of_measure, partner, qnic_type, qnic_index, 0);
+  Clause *count_clause = new MeasureCountClause(num_of_measure);
   Clause *resource_clause = new EnoughResourceClause(partner, num_resources);
 
   // Technically, there is no condition because an available resource is guaranteed whenever the rule is ran.
@@ -693,19 +695,20 @@ RuleSet *ConnectionManager::generateTomographyRuleSet(int owner, int partner, in
   rule->setCondition(condition);
 
   // Measure the local resource between it->second.neighborQNode_address.
-  quisp::rules::Action *action = new RandomMeasureAction(partner, qnic_type, qnic_index, 0, owner, num_of_measure);
+  // final argument is multihop tomography flag
+  quisp::rules::Action *action = new RandomMeasureAction(partner, qnic_type, qnic_index, num_resources, owner, num_of_measure);
   rule->setAction(action);
 
   // Add the rule to the RuleSet
   tomography->addRule(rule);
-  tomography->finalize();
+  // tomography->finalize();
 
   return tomography;
 }
 
 RuleSet *ConnectionManager::generateRGSsourceRuleSet(int owner, int partner, int num_of_measure){
   unsigned long ruleset_id = createUniqueId();
-  
+
   int rule_index = 0;
   RuleSet *absa = new RuleSet(ruleset_id, owner, partner);
   Rule *rule = new Rule(ruleset_id, rule_index);

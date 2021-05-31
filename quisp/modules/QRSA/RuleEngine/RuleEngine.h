@@ -135,12 +135,15 @@ class RuleEngine : public cSimpleModule {
   int *qnic_burst_trial_counter;
   typedef std::map<int, bool> trial_tracker;  // trial index, false or true (that trial is over or not)
   qnicResources *allResources;  // Size will be defined in initialization. If 3 qnic types, then size is 3. Type defined in QUBIT.h
+  std::map<int, photon_transmission_config> transmission_interface;
+
   /*
    * DEFINED in QNIC.h
    * typedef std::multimap<int, StationaryQubit*> EntangledPairs;//entangled Node address -> pointer to that local qubit
    * typedef EntangledPairs* qnicResources;//For each qnic. If the number of "qnic" is 3, then the size is 3.
    * For resource management over.
    * */
+  bool DEBUG_flag=false;
 
   // typedef rules::RuleSet* RuleSetPtr;
   typedef std::map<int, process> running_processes;  // index -> process
