@@ -72,7 +72,7 @@ void HardwareMonitor::initialize(int stage) {
     all_temporal_tomography_runningtime_holder[i].tomography_measurements = -1;
     all_temporal_tomography_runningtime_holder[i].tomography_time = -1;
   }
-  
+
   /*This keeps which node is connected to which local qnic.*/
   tomography_output_filename = par("tomography_output_filename").str();
   file_dir_name = par("file_dir_name").str();
@@ -83,7 +83,7 @@ void HardwareMonitor::initialize(int stage) {
   Purification_type = par("Purification_type");
   num_measure = par("num_measure");
   my_address = par("address");
-  
+
   if (stage == 0) {
     return;
   }
@@ -261,13 +261,13 @@ void HardwareMonitor::finish() {
 
   // for (auto iter = extendedTemporalTomographyHolder.begin(); iter != extendedTemporalTomographyHolder.end(); ++iter){
   //   auto tp = iter->second;
-  //   EV<<"partner: "<<iter->first<<"\n"; 
+  //   EV<<"partner: "<<iter->first<<"\n";
   //   for (int i = 0; i < num_qnic_total; i++){
   //     for (auto it = tp[i].begin(); it!=tp[i].end(); it++){
   //       EV<<"my basis: "<<it->second.my_basis<<" partner's basis: "<<it->second.partner_basis<<"\n";
   //     }
   //   }
-  // }  
+  // }
   for (int i = 0; i < num_qnic_total; i++) {
     int meas_total = 0;
     int GOD_clean_pair_total = 0;
@@ -279,7 +279,7 @@ void HardwareMonitor::finish() {
     for (auto it = all_temporal_tomography_output_holder[i].cbegin(); it != all_temporal_tomography_output_holder[i].cend(); ++it) {
       std::string basis_combination = "";
       partner_address = it-> second.partner_address;
-      // NOTE: if we do multiple tomography between multiple nodes at the same time, 
+      // NOTE: if we do multiple tomography between multiple nodes at the same time,
       // here we need changes
       basis_combination += it->second.my_basis;
       basis_combination += it->second.partner_basis;
@@ -383,7 +383,7 @@ void HardwareMonitor::finish() {
     tomography_dm << density_matrix_reconstructed.real() << "\n";
     tomography_dm << "IMAGINARY\n";
     tomography_dm << density_matrix_reconstructed.imag() << "\n";
-    
+
 
     std::cout << this_node->getFullName() << "<-->QuantumChannel{cost=" << link_cost << ";distance=" << dis << "km;fidelity=" << fidelity
               << ";bellpair_per_sec=" << bellpairs_per_sec << ";}<-->" << partner_node->getFullName() << "; F=" << fidelity << "; X=" << Xerr_rate << "; Z=" << Zerr_rate
@@ -1182,6 +1182,7 @@ cModule *HardwareMonitor::getQNode() {
         "ned file?");
     endSimulation();
   }
+  return currentModule;
 }
 
 
@@ -1190,7 +1191,7 @@ cModule *HardwareMonitor::getQNodeWithAddress(int address){
   // veryfication?
   cMsgPar *yes = new cMsgPar();
   yes->setStringValue("yes");
-  topo->extractByParameter("includeInTopo", yes->str().c_str()); 
+  topo->extractByParameter("includeInTopo", yes->str().c_str());
   int addr;
   for (int i = 0; i < topo->getNumNodes(); i++) {
     cTopology::Node *node = topo->getNode(i);
@@ -1201,7 +1202,6 @@ cModule *HardwareMonitor::getQNodeWithAddress(int address){
     }
   }
   delete topo;
-  // return node;
 }
 
 std::unique_ptr<NeighborInfo> HardwareMonitor::createNeighborInfo(const cModule &thisNode) {
@@ -1248,7 +1248,7 @@ std::unique_ptr<NeighborInfo> HardwareMonitor::createNeighborInfo(const cModule 
   if (type == SPDCType) {
     error("TO BE IMPLEMENTED");
   }
-  
+
   error(
       "node "
       "types: QNode, EPPS and HoM. Not %s",
