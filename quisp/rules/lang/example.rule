@@ -1,0 +1,10 @@
+
+rule BasicSwapRule {
+    if Fidelity > 0.98 and NumBellPairs > 1 {
+        swap(left: $0, right: $1)
+    }
+}
+
+ruleset ExampleRS {
+    BasicSwapRule
+}
