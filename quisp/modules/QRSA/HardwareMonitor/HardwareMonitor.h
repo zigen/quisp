@@ -118,6 +118,7 @@ class HardwareMonitor : public cSimpleModule {
   int num_measure;
   int num_end_nodes;
   std::vector<int> tomography_partners;
+  
 
   RoutingDaemon *routing_daemon;
 
@@ -141,6 +142,7 @@ class HardwareMonitor : public cSimpleModule {
   Temporal_Tomography_Output_Holder *all_temporal_tomography_output_holder;
   Extended_Tomography_Outcome *extended_temporal_tomography_output; // qnic address -> partner . count_id . outcome
   extended_link_cost *extended_tomography_runningtime_holder;
+  // extended_link_cost *extended_tomography_runningtime_holder;
   link_cost *all_temporal_tomography_runningtime_holder;
   std::string tomography_output_filename;
   std::string file_dir_name;
