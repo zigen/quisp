@@ -80,8 +80,8 @@ class RuleEngine : public IRuleEngine {
   // typedef std::map<std::string, quisp::rules::RuleSet> processes;//process_id -> Rule set
   void freeResource(int qnic_index, int qubit_index, QNIC_type qnic_type) override;
   void freeConsumedResource(int qnic_index, StationaryQubit *qubit, QNIC_type qnic_type) override;
-  void dynamic_ResourceAllocation(int qnic_type, int qnic_index) override;
-  void ResourceAllocation(int qnic_type, int qnic_index) override;
+  void dynamic_ResourceAllocation(QNIC_type qnic_type, int qnic_index) override;
+  void ResourceAllocation(QNIC_type qnic_type, int qnic_index) override;
 
  protected:
   void initialize() override;

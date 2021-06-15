@@ -7,7 +7,7 @@ using namespace omnetpp;
 namespace quisp {
 namespace modules {
 using quisp::modules::QNIC;
-using quisp::modules::QNIC_N;
+using quisp::modules::QNIC_type;
 
 struct NeighborInfo {
   // QNode, SPDC, HOM
@@ -35,7 +35,7 @@ struct ConnectionSetupInfo {
 
 const ConnectionSetupInfo NULL_CONNECTION_SETUP_INFO{.qnic =
                                                          {
-                                                             .type = QNIC_N,
+                                                             .type = QNIC_type::Count,
                                                              .index = -1,
                                                          },
                                                      .neighbor_address = -1,

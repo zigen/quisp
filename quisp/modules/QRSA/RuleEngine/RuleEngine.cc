@@ -46,19 +46,19 @@ void RuleEngine::initialize() {
     terminated_qnic[i] = false;
   }
 
-  Busy_OR_Free_QubitState_table = new QubitStateTable[QNIC_N];
-  Busy_OR_Free_QubitState_table[QNIC_E] = initializeQubitStateTable(Busy_OR_Free_QubitState_table[QNIC_E], QNIC_E);
-  Busy_OR_Free_QubitState_table[QNIC_R] = initializeQubitStateTable(Busy_OR_Free_QubitState_table[QNIC_R], QNIC_R);
-  Busy_OR_Free_QubitState_table[QNIC_RP] = initializeQubitStateTable(Busy_OR_Free_QubitState_table[QNIC_RP], QNIC_RP);
+  Busy_OR_Free_QubitState_table = new QubitStateTable[static_cast<int>(QNIC_type::Count)];
+  Busy_OR_Free_QubitState_table[QNIC_type::QNIC_E] = initializeQubitStateTable(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_E], QNIC_type::QNIC_E);
+  Busy_OR_Free_QubitState_table[QNIC_type::QNIC_R] = initializeQubitStateTable(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_R], QNIC_type::QNIC_R);
+  Busy_OR_Free_QubitState_table[QNIC_type::QNIC_RP] = initializeQubitStateTable(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_RP], QNIC_type::QNIC_RP);
 
   // Tracks which qubit was sent first, second and so on per qnic(r,rp)
   tracker = new sentQubitIndexTracker[number_of_qnics_all];
 
   /*Initialize resource list by Age for the actual use of qubits in operations*/
-  allResources = new qnicResources[QNIC_N];
-  allResources[QNIC_E] = new EntangledPairs[number_of_qnics];
-  allResources[QNIC_R] = new EntangledPairs[number_of_qnics_r];
-  allResources[QNIC_RP] = new EntangledPairs[number_of_qnics_rp];
+  allResources = new qnicResources[static_cast<int>(QNIC_type::Count)];
+  allResources[QNIC_type::QNIC_E] = new EntangledPairs[number_of_qnics];
+  allResources[QNIC_type::QNIC_R] = new EntangledPairs[number_of_qnics_r];
+  allResources[QNIC_type::QNIC_RP] = new EntangledPairs[number_of_qnics_rp];
 
   // running_processes = new RuleSetPtr[QNIC_N];//One process per QNIC for now. No multiplexing.
   // WATCH(assigned);
@@ -127,12 +127,12 @@ void RuleEngine::handleMessage(cMessage *msg) {
       InterfaceInfo inf = getInterface_toNeighbor(pk->getSrcAddr());
       qnic_index = inf.qnic.index;
       qnic_address = inf.qnic.address;
-      qnic_type = QNIC_E;
+      qnic_type = QNIC_type::QNIC_E;
       // neighborQNodeAddress = inf.neighborQNode_address;
     } else {  // destination hom is in the qnic in this node. This gets invoked when the request from internal hom is send from the same node.
       qnic_index = pk->getInternal_qnic_index();
       qnic_address = pk->getInternal_qnic_address();
-      qnic_type = QNIC_R;
+      qnic_type = QNIC_type::QNIC_R;
     }
 
     // for (EntangledPairs::iterator it =  allResources[qnic_type][qnic_index].begin(); it != allResources[qnic_type][qnic_index].end(); it++)
@@ -144,10 +144,10 @@ void RuleEngine::handleMessage(cMessage *msg) {
       return;
     } else if (pk->getInternal_qnic_index() == -1) {  // Schedule next burst. MIM, or the other node without internal HoM of MM
       EV << "This BSA request is non-internal\n";
-      scheduleFirstPhotonEmission(pk, QNIC_E);
+      scheduleFirstPhotonEmission(pk, QNIC_type::QNIC_E);
     } else {
       EV << "This BSA request is internal\n";
-      scheduleFirstPhotonEmission(pk, QNIC_R);
+      scheduleFirstPhotonEmission(pk, QNIC_type::QNIC_R);
     }
   }
 
@@ -331,13 +331,13 @@ void RuleEngine::handleMessage(cMessage *msg) {
   }
 
   for (int i = 0; i < number_of_qnics; i++) {
-    ResourceAllocation(QNIC_E, i);
+    ResourceAllocation(QNIC_type::QNIC_E, i);
   }
   for (int i = 0; i < number_of_qnics_r; i++) {
-    ResourceAllocation(QNIC_R, i);
+    ResourceAllocation(QNIC_type::QNIC_R, i);
   }
   for (int i = 0; i < number_of_qnics_rp; i++) {
-    ResourceAllocation(QNIC_RP, i);
+    ResourceAllocation(QNIC_type::QNIC_RP, i);
   }
 
   traverseThroughAllProcesses2();
@@ -672,22 +672,22 @@ void RuleEngine::scheduleFirstPhotonEmission(BSMtimingNotifier *pk, QNIC_type qn
   cModule *qnic_pointer;
 
   switch (qnic_type) {
-    case QNIC_E: {
+    case  QNIC_type::QNIC_E: {
       InterfaceInfo inf = getInterface_toNeighbor(destAddr);
       qnic_index = inf.qnic.index;
       qnic_address = inf.qnic.address;
     }  // inf is not defined beyound this point
       numFree =
-          countFreeQubits_inQnic(Busy_OR_Free_QubitState_table[QNIC_E], qnic_index);  // Refer the qubit state table. Check number of free qubits of qnic with index qnic_index.
+          countFreeQubits_inQnic(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_E], qnic_index);  // Refer the qubit state table. Check number of free qubits of qnic with index qnic_index.
       break;
-    case QNIC_R:
+    case QNIC_type::QNIC_R:
       qnic_address = pk->getInternal_qnic_address();
       qnic_index = pk->getInternal_qnic_index();  // If the BSA node is in this node, then obviously it is not in the neighbor table, 'cause it is inside it self. In that case, the
                                                   // gate index is stored in the packet.
-      numFree = countFreeQubits_inQnic(Busy_OR_Free_QubitState_table[QNIC_R], qnic_index);  // Same as above, except the table is managed independently.
+      numFree = countFreeQubits_inQnic(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_R], qnic_index);  // Same as above, except the table is managed independently.
       st->setInternal_hom(1);  // Mark request that the request is for internal BSA node. Default is 0.
       break;
-    case QNIC_RP:
+    case QNIC_type::QNIC_RP:
       error("This is not implemented yet");
       break;
     default:
@@ -719,14 +719,14 @@ bool RuleEngine::burstTrial_outdated(int this_trial, int qnic_address) {
 }
 
 void RuleEngine::shootPhoton_internal(SchedulePhotonTransmissionsOnebyOne *pk) {
-  if (countFreeQubits_inQnic(Busy_OR_Free_QubitState_table[QNIC_R], pk->getQnic_index()) == 0) {
+  if (countFreeQubits_inQnic(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_R], pk->getQnic_index()) == 0) {
     return;
   }
 
   int qubit_index;
   emt = new EmitPhotonRequest("EmitPhotonRequest(internal)");
-  qubit_index = getOneFreeQubit_inQnic(Busy_OR_Free_QubitState_table[QNIC_R], pk->getQnic_index());
-  Busy_OR_Free_QubitState_table[QNIC_R] = setQubitBusy_inQnic(Busy_OR_Free_QubitState_table[QNIC_R], pk->getQnic_index(), qubit_index);
+  qubit_index = getOneFreeQubit_inQnic(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_R], pk->getQnic_index());
+  Busy_OR_Free_QubitState_table[QNIC_type::QNIC_R] = setQubitBusy_inQnic(Busy_OR_Free_QubitState_table[QNIC_type::QNIC_R], pk->getQnic_index(), qubit_index);
   emt->setQubit_index(qubit_index);
   emt->setQnic_index(pk->getQnic_index());
   emt->setQnic_address(pk->getQnic_address());
@@ -1121,7 +1121,7 @@ void RuleEngine::dynamic_ResourceAllocation(int qnic_type, int qnic_index) {
 
 // Invoked whenever a new resource (entangled with neighbor) has been created.
 // Allocates those resources to a particular ruleset, from top to bottom (all of it).
-void RuleEngine::ResourceAllocation(int qnic_type, int qnic_index) {
+void RuleEngine::ResourceAllocation(QNIC_type qnic_type, int qnic_index) {
   if (!(rp.size() > 0)) {  // If no ruleset running, do nothing.
     return;
   }

@@ -30,7 +30,8 @@ class Clause {
 
  public:
   Clause(){};
-  Clause(int partner, int resource) : Clause(partner, QNIC_N, -1, resource){};
+  virtual ~Clause(){};
+  Clause(int partner, int resource) : Clause(partner, QNIC_type::Count, -1, resource){};
   Clause(int part, QNIC_type qt, int qi, int res) {
     partner = part;
     qnic_type = qt;

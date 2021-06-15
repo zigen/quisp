@@ -437,8 +437,8 @@ SwappingConfig ConnectionManager::generateSwappingConfig(int swapper_address, st
   // TODO: detail description of this.
   QNIC_id left_partner_qnic = qnics.at(left_partner_index).snd;
   QNIC_id right_partner_qnic = qnics.at(right_partner_index).fst;
-
-  if (right_self_qnic.type == QNIC_RP || left_self_qnic.type == QNIC_RP || right_partner_qnic.type == QNIC_RP || left_partner_qnic.type == QNIC_RP) {
+  if (right_self_qnic.type == QNIC_type::QNIC_RP || left_self_qnic.type == QNIC_type::QNIC_RP || right_partner_qnic.type == QNIC_type::QNIC_RP ||
+      left_partner_qnic.type == QNIC_type::QNIC_RP) {
     error("MSM link not implemented");
   }
 

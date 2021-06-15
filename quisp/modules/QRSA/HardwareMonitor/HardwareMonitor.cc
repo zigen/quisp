@@ -1055,11 +1055,11 @@ int HardwareMonitor::getQnicNumQubits(int qnic_index, QNIC_type qnic_type) {
 }
 
 cModule *HardwareMonitor::getQnic(int qnic_index, QNIC_type qnic_type) {
-  if (qnic_type >= QNIC_N) {
+  if (qnic_type >= QNIC_type::Count) {
     error("invalid qnic type: %d", qnic_type);
   }
 
-  cModule *qnic = provider.getQNode()->getSubmodule(QNIC_names[qnic_type], qnic_index);
+  cModule *qnic = provider.getQNode()->getSubmodule(QNIC_names.at(qnic_type), qnic_index);
   if (qnic == nullptr) {
     error("qnic(index: %d) not found.", qnic_index);
   }
@@ -1106,21 +1106,21 @@ void HardwareMonitor::prepareNeighborTable() {
   // Traverse through all local qnics to check where they are connected to.
   // HoM and EPPS will be ignored in this case.
   for (int index = 0; index < num_qnic; index++) {
-    InterfaceInfo inf = getQnicInterfaceByQnicAddr(index, QNIC_E);
+    InterfaceInfo inf = getQnicInterfaceByQnicAddr(index, QNIC_type::QNIC_E);
     auto n_inf = getNeighbor(inf.qnic.pointer);
     int neighborNodeAddress = n_inf->address;  // get the address of the Node nearby.
     inf.neighborQNode_address = n_inf->neighborQNode_address;
     neighbor_table[neighborNodeAddress] = inf;
   }
   for (int index = 0; index < num_qnic_r; index++) {
-    InterfaceInfo inf = getQnicInterfaceByQnicAddr(index, QNIC_R);
+    InterfaceInfo inf = getQnicInterfaceByQnicAddr(index, QNIC_type::QNIC_R);
     auto n_inf = getNeighbor(inf.qnic.pointer);
     int neighborNodeAddress = n_inf->address;  // get the address of the Node nearby.
     inf.neighborQNode_address = n_inf->neighborQNode_address;
     neighbor_table[neighborNodeAddress] = inf;
   }
   for (int index = 0; index < num_qnic_rp; index++) {
-    InterfaceInfo inf = getQnicInterfaceByQnicAddr(index, QNIC_RP);
+    InterfaceInfo inf = getQnicInterfaceByQnicAddr(index, QNIC_type::QNIC_RP);
     auto n_inf = getNeighbor(inf.qnic.pointer);
     int neighborNodeAddress = n_inf->address;  // get the address of the Node nearby.
     inf.neighborQNode_address = n_inf->neighborQNode_address;

@@ -68,7 +68,7 @@ typedef struct {
   RuleSet *Rs;
 } process;
 
-typedef std::map<int, QubitState> QubitStateTable;
+typedef std::map<QNIC_type, QubitState> QubitStateTable;
 typedef std::multimap<int, purification_result> PurificationTable;
 typedef std::multimap<int, Doublepurification_result> DoublePurificationTable;
 typedef std::multimap<int, Quatropurification_result> QuatroPurificationTable;
@@ -83,8 +83,8 @@ class IRuleEngine : public cSimpleModule {
   ~IRuleEngine() {}
   virtual void freeResource(int qnic_index, int qubit_index, QNIC_type qnic_type) = 0;
   virtual void freeConsumedResource(int qnic_index, StationaryQubit *qubit, QNIC_type qnic_type) = 0;
-  virtual void dynamic_ResourceAllocation(int qnic_type, int qnic_index) = 0;
-  virtual void ResourceAllocation(int qnic_type, int qnic_index) = 0;
+  virtual void dynamic_ResourceAllocation(QNIC_type qnic_type, int qnic_index) = 0;
+  virtual void ResourceAllocation(QNIC_type qnic_type, int qnic_index) = 0;
 };
 
 }  // namespace modules
