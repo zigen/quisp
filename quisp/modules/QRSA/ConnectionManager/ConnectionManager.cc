@@ -59,7 +59,7 @@ void ConnectionManager::handleMessage(cMessage *msg) {
     }
     bool is_qnic_available = !isQnicBusy(dst_inf->qnic.address);
     bool requested_by_myself = actual_src == my_address;
-    
+
     if (requested_by_myself) {
       if (is_qnic_available) {
         // reserve the qnic and relay the request to the next node
@@ -259,7 +259,7 @@ void ConnectionManager::respondToRequest(ConnectionSetupRequest *req) {
     // TODO: treat measurement node as a ordinal qnode
     // So far, ABSA measurement is the same as HoM
     std::vector<int> rgs_nodes;
-    // 2. 
+    // 2.
     EV<<"Request has been arrived!"<<"\n";
     // What the path info should be like?
     // Premise: Assume there are only absa connections (odd components are source and even components are absa)
@@ -287,7 +287,7 @@ void ConnectionManager::respondToRequest(ConnectionSetupRequest *req) {
       for (int i = 0; i < divisions; i++) {
         std::vector<int> partners;
         if (swapper[i] > 0) {
-          EV << link_left[i] << "---------------" << swapper[i] << "----------------" << link_right[i] << "\n"; 
+          EV << link_left[i] << "---------------" << swapper[i] << "----------------" << link_right[i] << "\n";
           EV_DEBUG << link_left[i] << "---------------" << swapper[i] << "----------------" << link_right[i] << "\n";
           partners.push_back(link_left[i]);
           partners.push_back(link_right[i]);
@@ -515,7 +515,7 @@ void ConnectionManager::relayRequestToNextHop(ConnectionSetupRequest *req) {
   // Use the QNIC address to find the next hop QNode, by asking the Hardware Monitor (neighbor table).
   auto dst_info = hardware_monitor->findConnectionInfoByQnicAddr(dst_qnic_addr);
   auto src_info = hardware_monitor->findConnectionInfoByQnicAddr(src_qnic_addr);
-  
+
   int num_accumulated_nodes = req->getStack_of_QNodeIndexesArraySize();
   int num_accumulated_costs = req->getStack_of_linkCostsArraySize();
   int num_accumulated_pair_info = req->getStack_of_QNICsArraySize();
@@ -650,10 +650,8 @@ RuleSet *ConnectionManager::generateEntanglementSwappingRuleSet(int owner, Swapp
   unsigned long ruleset_id = createUniqueId();
   int rule_index = 0;
 
-  EV<<"es_rule"<<ruleset_id<<"\n";
-
-  Clause *resource_clause_left = new EnoughResourceClauseLeft(conf.left_partner, conf.lres);
-  Clause *resource_clause_right = new EnoughResourceClauseRight(conf.right_partner, conf.rres);
+  Clause *resource_clause_left = new EnoughResourceClause(conf.left_partner, conf.lres);
+  Clause *resource_clause_right = new EnoughResourceClause(conf.right_partner, conf.rres);
 
   Condition *condition = new Condition();
   condition->addClause(resource_clause_left);
@@ -686,7 +684,7 @@ RuleSet *ConnectionManager::generateTomographyRuleSet(int owner, int partner, in
   Rule *rule = new Rule(ruleset_id, rule_index, "tomography");
 
   // 3000 measurements in total. There are 3*3 = 9 patterns of measurements. So each combination must perform 3000/9 measurements.
-  Clause *count_clause = new MeasureCountClause(num_of_measure, partner, qnic_type, qnic_index, 0);
+  Clause *count_clause = new MeasureCountClause(num_of_measure);
   Clause *resource_clause = new EnoughResourceClause(partner, num_resources);
 
   // Technically, there is no condition because an available resource is guaranteed whenever the rule is ran.
@@ -710,7 +708,7 @@ RuleSet *ConnectionManager::generateTomographyRuleSet(int owner, int partner, in
 
 RuleSet *ConnectionManager::generateRGSsourceRuleSet(int owner, int partner, int num_of_measure){
   unsigned long ruleset_id = createUniqueId();
-  
+
   int rule_index = 0;
   RuleSet *absa = new RuleSet(ruleset_id, owner, partner);
   Rule *rule = new Rule(ruleset_id, rule_index);
