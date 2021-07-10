@@ -21,78 +21,18 @@ Define_Module(StationaryQubit);
 
 /**
  * \brief Initialize StationaryQubit
- *
- * Omnet called method to initialize objects.
- *
  */
 void StationaryQubit::initialize() {
-  double rand = dblrand();
-
-  /*Photon emission time error rates*/
-
-  /*
   emission_success_probability = par("emission_success_probability");
-  emission_error.X_error_rate = par("emission_Z_error_rate");//par("name") will be read from .ini or .ned file
-  emission_error.X_error_rate =  par("emission_X_error_rate");
-  emission_error.Z_error_rate = par("emission_Y_error_rate");
-  emission_error.pauli_error_rate = emission_error.Y_error_rate + emission_error.Z_error_rate + emission_error.X_error_rate;
-
-
-  emission_error.No_error_ceil =1-emission_error.pauli_error_rate;// if 0 <= dblrand < fidelity = No error
-  emission_error.X_error_ceil = emission_error.No_error_ceil + emission_error.X_error_rate; // if fidelity <= dblrand < fidelity+X error rate = X error
-  emission_error.Z_error_ceil = emission_error.X_error_ceil + emission_error.Z_error_rate;
-  emission_error.Y_error_ceil = 1;
-
-
-  std::cout<<"emission_error.No_error_ceil = "<<emission_error.No_error_ceil<<"\n";
-  std::cout<<"emission_error.X_error_ceil = "<<emission_error.X_error_ceil<<"\n";
-  std::cout<<"emission_error.Y_error_ceil = "<<emission_error.Y_error_ceil<<"\n";
-  std::cout<<"emission_error.Z_error_ceil = "<<emission_error.Z_error_ceil<<"\n";
-  */
-  emission_success_probability = par("emission_success_probability");
-  // numemitted = 0;
-  // setErrorCeilings();
-
-  /*Memory error rates*/
-
-  /*
-double memory_Z_error_ratio = par("memory_Z_error_ratio");//par("name") will be read from .ini or .ned file
-double memory_X_error_ratio = par("memory_X_error_ratio");
-double memory_Y_error_ratio = par("memory_Y_error_ratio");
-double memory_excitation_error_ratio = par("memory_energy_excitation_ratio");
-double memory_relaxation_error_ratio = par("memory_energy_relaxation_ratio");
-double memory_completely_mixed_ratio = par("memory_completely_mixed_ratio");
-
-if(memory_Z_error_ratio == 0 && memory_X_error_ratio == 0 && memory_Y_error_ratio == 0 && memory_excitation_error_ratio == 0 && memory_relaxation_error_ratio == 0 &&
-memory_completely_mixed_ratio ==0){ memory_Z_error_ratio = 1; memory_X_error_ratio = 1; memory_Y_error_ratio = 1; memory_excitation_error_ratio = 1; memory_relaxation_error_ratio =
-1; memory_completely_mixed_ratio = 1;
-}
-
-//EV<<"memory_excitation_error_ratio = "<<memory_excitation_error_ratio<<", memory_relaxation_error_ratio"<<memory_relaxation_error_ratio<<"\n";
-double memory_ratio_sum = memory_Z_error_ratio+memory_X_error_ratio+memory_Y_error_ratio + memory_excitation_error_ratio + memory_relaxation_error_ratio +
-memory_completely_mixed_ratio; memory_err.error_rate = par("memory_error_rate");//This is per μs. memory_err.X_error_rate = memory_err.error_rate *
-(memory_X_error_ratio/memory_ratio_sum); memory_err.Y_error_rate = memory_err.error_rate * (memory_Y_error_ratio/memory_ratio_sum); memory_err.Z_error_rate = memory_err.error_rate
-* (memory_Z_error_ratio/memory_ratio_sum); memory_err.excitation_error_rate = memory_err.error_rate * (memory_excitation_error_ratio/memory_ratio_sum);
-memory_err.relaxation_error_rate = memory_err.error_rate * (memory_relaxation_error_ratio/memory_ratio_sum);
-memory_err.completely_mixed_rate = memory_err.error_rate * (memory_completely_mixed_ratio/memory_ratio_sum);
-  */
-
-  memory_err.X_error_rate = (double)par("memory_X_error_rate").doubleValue();
-  memory_err.Y_error_rate = (double)par("memory_Y_error_rate").doubleValue();
-  memory_err.Z_error_rate = (double)par("memory_Z_error_rate").doubleValue();
-  memory_err.excitation_error_rate = (double)par("memory_energy_excitation_rate").doubleValue();
-  memory_err.relaxation_error_rate = (double)par("memory_energy_relaxation_rate").doubleValue();
-  memory_err.completely_mixed_rate = (double)par("memory_completely_mixed_rate").doubleValue();
+  memory_err.X_error_rate = par("memory_X_error_rate").doubleValue();
+  memory_err.Y_error_rate = par("memory_Y_error_rate").doubleValue();
+  memory_err.Z_error_rate = par("memory_Z_error_rate").doubleValue();
+  memory_err.excitation_error_rate = par("memory_energy_excitation_rate").doubleValue();
+  memory_err.relaxation_error_rate = par("memory_energy_relaxation_rate").doubleValue();
+  memory_err.completely_mixed_rate = par("memory_completely_mixed_rate").doubleValue();
+  // unit is per μs.
   memory_err.error_rate = memory_err.X_error_rate + memory_err.Y_error_rate + memory_err.Z_error_rate + memory_err.excitation_error_rate + memory_err.relaxation_error_rate +
-                          memory_err.completely_mixed_rate;  // This is per μs.
-  /*EV<<"Err rate = "<<memory_err.pauli_error_rate<<"\n";
-  EV<<"Ratio sum = "<<memory_ratio_sum<<"\n";
-  EV<<"I error rate (mem) = "<<1-memory_err.pauli_error_rate<<"\n";
-  EV<<"X error rate (mem) = "<<memory_err.X_error_rate<<"\n";
-  EV<<"Y error rate (mem) = "<<memory_err.Y_error_rate<<"\n";
-  EV<<"Z error rate (mem) = "<<memory_err.Z_error_rate<<"\n";
-  EV<<"Excitation error rate (mem) = "<<memory_err.excitation_error_rate<<"\n";
-  EV<<"Relaxation error rate (mem) = "<<memory_err.relaxation_error_rate<<"\n";*/
+                          memory_err.completely_mixed_rate;
   Memory_Transition_matrix = MatrixXd::Zero(7, 7);
   // clang-format off
   Memory_Transition_matrix <<
@@ -156,14 +96,10 @@ memory_err.completely_mixed_rate = memory_err.error_rate * (memory_completely_mi
   /* e^(t/T1) energy relaxation, e^(t/T2) phase relaxation. Want to use only 1/10 of T1 and T2 in general.*/
 }
 
-void StationaryQubit::finish() {
-  // std::cout<<"emitted "<<numemitted<<"¥n";
-}
+void StationaryQubit::finish() {}
 
 /**
  * \brief cSimpleModule handleMessage function
- *
- * \param msg is the message
  */
 void StationaryQubit::handleMessage(cMessage *msg) {
   bubble("Got a photon!!");
@@ -278,40 +214,6 @@ TwoQubitGateErrorModel StationaryQubit::setTwoQubitGateErrorCeilings(TwoQubitGat
   return model;
 }
 
-/*
-void StationaryQubit::setEmissionPauliError(){
-    if(par("GOD_Xerror") || par("GOD_Zerror")){
-        //std::cout<<"node["<<node_address<<"] qnic["<<qnic_address<<"] Emitting from "<<this<<"X="<<par("GOD_Xerror").str()<<"Z="<<par("GOD_Zerror").str()<<"\n";
-        error("There shouldn't be an error existing before photon emission. This error may have not been reinitialized since last use. Better check!");
-    }
-    double rand = dblrand();//Gives a random double between 0.0 ~ 1.0
-    if(rand < emission_error.No_error_ceil){
-               //Qubit will end up with no error
-               //EV<<"No error :"<<rand<<" < "<<No_error_ceil<<"\n";
-    }else if(emission_error.No_error_ceil <= rand && rand < emission_error.X_error_ceil && (emission_error.No_error_ceil!=emission_error.X_error_ceil)){
-               //X error
-                par("GOD_Xerror") = true;
-                //EV<<"Xerror :"<<No_error_ceil<<"<="<<rand<<" < "<<X_error_ceil<<"\n";
-    }else if(emission_error.X_error_ceil <= rand && rand < emission_error.Z_error_ceil && (emission_error.X_error_ceil!=emission_error.Z_error_ceil)){
-               //Z error
-                par("GOD_Zerror") = true;
-               // EV<<"Zerror :"<<X_error_ceil<<"<="<<rand<<" < "<<Z_error_ceil<<"\n";
-    }else if(emission_error.Z_error_ceil <= rand && rand < emission_error.Y_error_ceil && (emission_error.Z_error_ceil!=emission_error.Y_error_ceil)){
-               //Y error
-                par("GOD_Xerror") = true;
-                par("GOD_Zerror") = true;
-                //EV<<"Yerror :"<<Z_error_ceil<<"<="<<rand<<" < "<<Y_error_ceil<<"\n";
-   }else{
-       std::cout<<rand<<"\n";
-       std::cout<<"emission_error.No_error_ceil = "<<emission_error.No_error_ceil<<"\n";
-       std::cout<<"emission_error.X_error_ceil = "<<emission_error.X_error_ceil<<"\n";
-       std::cout<<"emission_error.Y_error_ceil = "<<emission_error.Y_error_ceil<<"\n";
-       std::cout<<"emission_error.Z_error_ceil = "<<emission_error.Z_error_ceil<<"\n";
-       error("Either the error ceilings or the random double generator is wrong.");
-   }
-}
-*/
-
 bool StationaryQubit::measure_X() {
   // Need to add noise here later
   apply_single_qubit_gate_error(Measurement_error);
@@ -365,7 +267,6 @@ void StationaryQubit::X_gate() {
 void StationaryQubit::CNOT_gate(StationaryQubit *control_qubit) {
   // Need to add noise here later
   apply_two_qubit_gate_error(CNOTgate_error, control_qubit);
-  // std::cout<<"this X err = "<<this->par("GOD_Xerror").boolValue()<<"\n";
 
   if (control_qubit->par("GOD_Xerror")) {
     // X error propagates from control to target. If an X error is already present, then it cancels out.
@@ -454,8 +355,6 @@ void StationaryQubit::Lock(unsigned long rs_id, int rule_id, int action_id) {
   locked_ruleset_id = rs_id;  // Used to identify what this qubit is locked for.
   locked_rule_id = rule_id;
   action_index = action_id;
-  // std::cout<<"*******************"<<this<<"in node["<<this->node_address<<"]Locked. Rsid="<<locked_ruleset_id<<" rid="<<locked_rule_id<<" aid="<<action_index<<"\n";
-
   if (hasGUI()) {
     bubble("Locked!");
     getDisplayString().setTagArg("i", 1, "purple");
@@ -576,9 +475,7 @@ void StationaryQubit::setExcitedDensityMatrix() {
   }
 
   if (this->entangled_partner != nullptr) {  // If it used to be entangled...
-    // error("What?");
     this->entangled_partner->updated_time = simTime();
-    // For GUI
     this->entangled_partner->par("last_updated_at") = simTime().dbl();
     // This also eliminates the entanglement information.
     this->entangled_partner->setCompletelyMixedDensityMatrix();
@@ -640,7 +537,6 @@ void StationaryQubit::addZerror() {
 
 // Only tracks error propagation. If two booleans (Alice and Bob) agree (truetrue or falsefalse), keep the purified ebit.
 bool StationaryQubit::Xpurify(StationaryQubit *resource_qubit /*Controlled*/) {
-  // std::cout<<"X puri\n";
   // This could result in completelty mixed, excited, relaxed, which also affects the entangled partner.
   apply_memory_error(this);
   apply_memory_error(resource_qubit);
@@ -650,10 +546,9 @@ bool StationaryQubit::Xpurify(StationaryQubit *resource_qubit /*Controlled*/) {
 }
 
 bool StationaryQubit::Zpurify(StationaryQubit *resource_qubit /*Target*/) {
-  // std::cout<<"Z puri\n";
   apply_memory_error(this);  // This could result in completelty mixed, excited, relaxed, which also affects the entangled partner.
   apply_memory_error(resource_qubit);
-  /*Target qubit*/ resource_qubit->CNOT_gate(this /*controlled qubit*/);
+  resource_qubit->CNOT_gate(this /*controlled qubit*/);
   this->Hadamard_gate();
   bool meas = this->measure_Z();
   return meas;
@@ -812,12 +707,6 @@ Matrix2cd StationaryQubit::getErrorMatrix(StationaryQubit *qubit) {
   Matrix2cd err;
 
   if (qubit->par("GOD_CMerror") || qubit->par("GOD_REerror") || qubit->par("GOD_REerror")) {
-    // std::cout<<"CMerror: "<<qubit<<" in node["<<node_address<<"]\n";
-    // std::cout<<"***CHECK: "<<qubit<<" in node["<<node_address<<"]***\n";
-    // std::cout<<"par cm = "<<qubit->par("GOD_CMerror").boolValue()<<", completely_mixed = "<<qubit->completely_mixed<<"\n";
-    /// std::cout<<"par re= "<<qubit->par("GOD_REerror").boolValue()<<", par cm = "<<qubit->par("GOD_EXerror").boolValue()<<", re/ex = "<<qubit->excited_or_relaxed<<"\n";
-    // std::cout<<"******************************\n";
-
     error("CMerror in getErrorMatrix. Not supposed to happen.");
   }
 
@@ -847,25 +736,11 @@ quantum_state StationaryQubit::getQuantumState() {
   if (this->excited_or_relaxed || this->entangled_partner->excited_or_relaxed) {
     error("Wrong");
   }
-  // std::cout<<"!!!!CHECK: "<<this->entangled_partner<<" in node["<<this->entangled_partner->node_address<<"]!!!\n";
-  // std::cout<<"par cm = "<<this->entangled_partner->par("GOD_CMerror").boolValue()<<", completely_mixed = "<<this->entangled_partner->completely_mixed<<"\n";
-  // std::cout<<"par re= "<<this->entangled_partner->par("GOD_REerror").boolValue()<<", par cm = "<<this->entangled_partner->par("GOD_EXerror").boolValue()<<", re/ex =
-  // "<<this->entangled_partner->excited_or_relaxed<<"\n"; std::cout<<"!!!!!!!!!!!!!!!!!!\n";
 
   Matrix4cd combined_errors = kroneckerProduct(getErrorMatrix(this), getErrorMatrix(entangled_partner)).eval();
 
   // If Pauli errors
   Vector4cd ideal_Bell_state(1 / sqrt(2), 0, 0, 1 / sqrt(2));  // Assumes that the state is a 2 qubit state |00> + |11>
-
-  // std::cout<<"CMerror: "<<this<<" in node["<<node_address<<"]\n";
-  // std::cout<<"~~~CHECK: "<<this<<" in node["<<node_address<<"]~~~\n";
-  // std::cout<<"par cm = "<<this->par("GOD_CMerror").boolValue()<<", completely_mixed = "<<this->completely_mixed<<"\n";
-  // std::cout<<"par re= "<<this->par("GOD_REerror").boolValue()<<", par cm = "<<this->par("GOD_EXerror").boolValue()<<", re/ex = "<<this->excited_or_relaxed<<"\n";
-  // std::cout<<"~~~~~~~~~~~~~~~~~~~~~~~~\n";
-
-  // Matrix4cd combined_errors = kroneckerProduct(getErrorMatrix(this),getErrorMatrix(entangled_partner)).eval();
-
-  // EV<<"Combined errors  = "<<combined_errors<<"\n";
   Vector4cd actual_Bell_state = combined_errors * ideal_Bell_state;
   // EV<<"Current physical state is = "<<actual_Bell_state;
   Matrix4cd density_matrix = actual_Bell_state * actual_Bell_state.adjoint();
@@ -961,13 +836,7 @@ void StationaryQubit::apply_two_qubit_gate_error(TwoQubitGateErrorModel const &e
 }
 
 measurement_outcome StationaryQubit::measure_density_independent() {
-  // std::cout<<"\n\n\n\n\n\n\n\nMEASURING!!!\n";
-
-  // if(this->getIndex() == 71 && this->node_address == 3)
-  //	std::cout<<"---measuring "<<this<<" in node["<<node_address<<"]\n";
-  // std::cout<<"---measuring "<<this<<" in qnic["<<qnic_index<<"] in node["<<node_address<<"]\n";
   if (this->entangled_partner == nullptr && this->Density_Matrix_Collapsed(0, 0).real() == -111) {
-    // EV<<entangled_partner<<"\n";
     std::cout << Density_Matrix_Collapsed << "\n";
     std::cout << "Measuring" << this << "in node[" << node_address << "]\n";
     std::cout << this->getIndex() << "\n";
@@ -1059,11 +928,9 @@ measurement_outcome StationaryQubit::measure_density_independent() {
     // Because this qubit can be measured after that, we need to update the stored density matrix according to new errors occurred due to memory error.
 
     if (Xerr != GOD_dm_Xerror) {  // Another X error to the dm.
-      // error("NO");
       Density_Matrix_Collapsed = Pauli.X * Density_Matrix_Collapsed * Pauli.X.adjoint();
     }
     if (Zerr != GOD_dm_Zerror) {  // Another Z error to the dm.
-      // error("NO!");
       Density_Matrix_Collapsed = Pauli.Z * Density_Matrix_Collapsed * Pauli.Z.adjoint();
     }
 
@@ -1120,8 +987,6 @@ measurement_outcome StationaryQubit::measure_density_independent() {
 
     // We actually do not need this as long as deleting entangled_partner completely is totally fine.
     entangled_partner->partner_measured = true;
-    // if(entangled_partner->getIndex() == 71 && entangled_partner->node_address == 3)
-    //	std::cout<<"-------------------"<<entangled_partner<<" in node["<<entangled_partner->node_address<<"] overwritten dm.\n";
 
     // Break entanglement.
     entangled_partner->entangled_partner = nullptr;
@@ -1168,47 +1033,6 @@ measurement_operator StationaryQubit::Random_Measurement_Basis_Selection() {
   }
   return this_measurement;
 }
-
-// Assumes that this qubit is entangled with another one, as Bell pair 00+11. 1st qubit is self, 2nd is partner.
-// When do we perform measurements? I think we can just ignore the success/fail of entanglement attempt, and measure it beforehand anyway. Waiting cause error.
-// How do we know when to measure though?
-// Return value: 1 if output is +, 0 if output is -.
-/*std::bitset<1> StationaryQubit::measure_density(char basis_this_qubit){
-    if(entangled_partner == nullptr){
-        error("Measuring a qubit that is not entangled with another qubit. Not allowed!");
-    }
-    //if(entangled_partner->emitted_time=-1 && single_qubit_dm == null){
-    //    error("Something is wrong.");
-    }
-
-    //todo Check if entangled state has collapsed already (partner qubit measured already).
-
-    //if not, then measure it and get the output (density matrix required)!
-    apply_memory_error(this);//Noise due to idle time in memory. This updates the par("GOD_Zerror") and par("GOD_Xerror") of this particular qubit.
-    quantum_state current_state = getQuantumState();//Get the density matrix of the Bell pair that involves this particular qubit.
-    measurement_output_probabilities p = getOutputProbabilities(current_state, basis_this_qubit);
-    EV <<" P(++) = "<<p.probability_plus_plus<<", P(+-) = "<<p.probability_plus_minus<<", P(-+) = "<<p.probability_minus_plus<<", P(--) = "<<p.probability_minus_minus<<"\n";
-    double rand = dblrand();//Gives a random double between 0.0 ~ 1.0
-
-    std::bitset<2> output(0);//by default, output is -- (in binary 00)
-    if(rand < p.probability_plus_plus){
-        //Output is ++
-        output.set(0);//00->01
-        output.set(1);//01->11
-        EV<<"Output is ++"<<output<<"\n";
-    }else if(p.probability_plus_plus <= rand && rand < (p.probability_plus_plus+p.probability_plus_minus)){
-        //Output is +-
-        output.set(1);//00->10
-        EV<<"Output is +-"<<output<<"\n";
-    }else if((p.probability_plus_plus+p.probability_plus_minus) <= rand && rand < (p.probability_plus_plus+p.probability_plus_minus+p.probability_minus_plus)){
-        //Output is -+
-        output.set(0);//00->01
-        EV<<"Output is -+"<<output<<"\n";
-    }else{
-        EV<<"Output is --"<<output<<"\n";
-    }
-    //return output.test(1);
-}*/
 
 }  // namespace modules
 }  // namespace quisp
